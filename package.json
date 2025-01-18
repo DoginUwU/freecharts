@@ -42,7 +42,6 @@
   "license": "MIT",
   "dependencies": {
     "@panzoom/panzoom": "^4.6.0",
-    "@pdftron/pdfjs-express-viewer": "^8.7.5",
     "axios": "^1.7.9",
     "electron-squirrel-startup": "^1.0.1",
     "lodash-es": "^4.17.21",

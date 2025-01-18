@@ -10,12 +10,18 @@
         ref="canvasContainer"
       >
         <div
+          class="relative"
+          ref="panContainer"
           :style="{
             transform: `rotate(${state.rotation}deg)`,
             filter: state.invertColors ? 'invert(100%)' : '',
           }"
         >
-          <canvas ref="canvas" />
+          <canvas ref="canvas" class="absolute top-0 left-0 w-full h-full" />
+          <canvas
+            ref="fallbackCanvas"
+            class="absolute top-0 left-0 w-full h-full fallback-canvas"
+          />
         </div>
         <!-- <div ref="textLayer" class="textLayer" /> -->
       </div>
@@ -64,7 +70,9 @@ import { Airfield } from "../../types/airfield";
 import Panzoom, { PanzoomObject } from "@panzoom/panzoom";
 
 const canvas = ref<HTMLCanvasElement>();
+const fallbackCanvas = ref<HTMLCanvasElement>();
 const canvasContainer = ref<HTMLDivElement>();
+const panContainer = ref<HTMLDivElement>();
 // const textLayer = ref<HTMLDivElement>();
 const container = ref<HTMLDivElement>();
 let pdf = null as pdfjs.PDFDocumentProxy | null;
@@ -115,10 +123,33 @@ onBeforeUnmount(() => {
 });
 
 async function renderPage() {
-  if (!canvas.value || state.renderInProgress || !pdf) return;
+  if (
+    !canvas.value ||
+    !fallbackCanvas.value ||
+    !panContainer.value ||
+    state.renderInProgress ||
+    !pdf
+  ) {
+    return;
+  }
+
+  const ratio = window.devicePixelRatio;
 
   if (!page || page.pageNumber !== state.page) {
     page = await pdf.getPage(state.page);
+
+    const fallbackContext = fallbackCanvas.value.getContext("2d")!;
+    const fallbackViewport = page.getViewport({ scale: 1 });
+    fallbackCanvas.value.width = fallbackViewport.width * ratio;
+    fallbackCanvas.value.height = fallbackViewport.height * ratio;
+    await page.render({
+      canvasContext: fallbackContext,
+      viewport: fallbackViewport,
+      annotationMode: 0,
+    }).promise;
+
+    panContainer.value.style.width = `${fallbackCanvas.value.width}px`;
+    panContainer.value.style.height = `${fallbackCanvas.value.height}px`;
   }
 
   const context = canvas.value.getContext("2d");
@@ -126,18 +157,18 @@ async function renderPage() {
   if (!context) return;
 
   state.renderInProgress = true;
+  fallbackCanvas.value.style.display = "block";
 
   const viewport = page.getViewport({ scale: state.scale });
 
-  const ratio = window.devicePixelRatio;
-
-  canvas.value.height = viewport.height * ratio;
   canvas.value.width = viewport.width * ratio;
+  canvas.value.height = viewport.height * ratio;
   context.scale(ratio, ratio);
 
   await page.render({
     canvasContext: context,
     viewport,
+    annotationMode: 0,
   }).promise;
 
   // if (!textLayerData) {
@@ -157,6 +188,7 @@ async function renderPage() {
 
   // textLayer.value.style.setProperty("--scale-factor", String(state.scale));
 
+  fallbackCanvas.value.style.display = "none";
   state.renderInProgress = false;
 }
 
@@ -167,13 +199,17 @@ function handleZoom(event: WheelEvent) {
 
   const zoomStep = 0.2;
   const delta = event.deltaY > 0 ? -zoomStep : zoomStep;
-  state.scale = Math.min(Math.max(state.scale + delta, 0.5), 5);
+  const newScale = Math.min(Math.max(state.scale + delta, 0.5), 5);
+
+  if (newScale === state.scale) return;
+
+  state.scale = newScale;
 
   const currentPan = panzoom?.getPan();
 
   if (!currentPan) return;
 
-  // panzoom?.pan(0, 0);
+  panzoom?.zoomWithWheel(event);
 
   renderPage();
 }
@@ -216,5 +252,10 @@ function toggleInvertColors() {
 <style scoped>
 .button {
   @apply bg-zinc-900/90 border border-zinc-700 outline-primary hover:border-primary hover:text-primary w-12 h-12 rounded-lg flex items-center justify-center backdrop-blur-sm;
+}
+
+.fallback-canvas {
+  transform-origin: center center;
+  /* transition: all 0.3s ease-in-out; */
 }
 </style>

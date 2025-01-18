@@ -61,6 +61,7 @@
                   :class="{
                     'border-t rounded-t-lg': index === 0,
                     'border-b rounded-b-lg': index === charts.length - 1,
+                    '!bg-primary': state.currentChartId === chart.id,
                   }"
                   role="button"
                   @click="loadChart(chart.id)"
@@ -186,6 +187,7 @@ async function loadChart(chartId: string) {
 .airfield-anim-enter-active {
   transition:
     width 0.3s,
+    min-width 0.3s,
     opacity 0.7s;
 }
 
@@ -193,6 +195,7 @@ async function loadChart(chartId: string) {
 .airfield-anim-leave-to {
   opacity: 0;
   width: 0;
+  min-width: 0;
   overflow: hidden;
 }
 
