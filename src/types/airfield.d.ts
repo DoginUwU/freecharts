@@ -12,6 +12,7 @@ export interface Chart {
   type: ChartType;
   subType: ChartSubType;
   name: string;
+  icao: string;
 }
 
 export type ChartType = "GRD" | "SID" | "STAR" | "VAC";

@@ -66,7 +66,7 @@ import "pdfjs-dist/web/pdf_viewer.css";
 import * as pdfjs from "pdfjs-dist";
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { AirfieldService } from "../../services/AirfieldService";
-import { Airfield } from "../../types/airfield";
+import { Airfield, Chart } from "../../types/airfield";
 import Panzoom, { PanzoomObject } from "@panzoom/panzoom";
 
 const canvas = ref<HTMLCanvasElement>();
@@ -82,7 +82,7 @@ let panzoom = null as PanzoomObject | null;
 
 const props = defineProps<{
   airfield: Airfield;
-  chartId: string;
+  chart: Chart;
 }>();
 
 const state = reactive({
@@ -101,8 +101,8 @@ const state = reactive({
 onMounted(async () => {
   pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
   const buffer = await AirfieldService.loadChart(
-    props.airfield.icao,
-    props.chartId,
+    props.chart.icao,
+    props.chart.id,
   );
   pdf = await pdfjs.getDocument(buffer).promise;
   state.loaded = true;
