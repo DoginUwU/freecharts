@@ -5,7 +5,7 @@
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
   "scripts": {
-    "start": "electron-forge start",
+    "dev": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -22,6 +22,7 @@
     "@electron-forge/plugin-vite": "^7.6.0",
     "@electron/fuses": "^1.8.0",
     "@eslint/js": "^9.17.0",
+    "@types/lodash-es": "^4.17.12",
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.20",
     "electron": "33.2.1",
@@ -40,8 +41,13 @@
   "author": "dogin",
   "license": "MIT",
   "dependencies": {
+    "@panzoom/panzoom": "^4.6.0",
+    "@pdftron/pdfjs-express-viewer": "^8.7.5",
+    "axios": "^1.7.9",
     "electron-squirrel-startup": "^1.0.1",
+    "lodash-es": "^4.17.21",
     "pdfjs-dist": "^4.10.38",
+    "pinia": "^2.3.0",
     "tailwindcss": "^3.4.17",
     "vue": "^3.5.13",
     "vue-router": "4"

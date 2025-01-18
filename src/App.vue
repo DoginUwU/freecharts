@@ -1,5 +1,5 @@
 <template>
-  <main class="flex gap-4 h-screen">
+  <main class="flex h-screen">
     <Sidebar />
     <router-view class="flex-1" />
   </main>

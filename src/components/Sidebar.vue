@@ -1,6 +1,6 @@
 <template>
-  <aside class="px-2">
-    <nav>
+  <aside class="px-2 h-full flex flex-col">
+    <nav class="flex-1">
       <ol class="flex flex-col gap-2">
         <li
           v-for="menu in MENUS"
@@ -28,12 +28,23 @@
         </li>
       </ol>
     </nav>
+    <div class="mt-auto">
+      <button
+        class="flex flex-col items-center justify-center aspect-square w-auto h-16 relative overflow-hidden rounded-xl p-2 transition select-none hover:bg-gray-800 mb-2"
+        @click="toggleMinimizeData"
+      >
+        <i class="uil text-2xl uil-arrows-h-alt" />
+      </button>
+    </div>
   </aside>
 </template>
 
 <script lang="ts" setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { useSidebarStore } from "../stores/sidebarStore";
+
+const { toggleMinimizeData } = useSidebarStore();
 
 interface Menu {
   name: string;
