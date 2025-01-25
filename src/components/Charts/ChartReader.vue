@@ -62,6 +62,14 @@
           <i class="uil uil-corner-left-down rotate-90" />
         </button>
       </div>
+      <div
+        class="absolute top-4 left-4 flex items-center gap-2 max-w-[500px] flex-wrap"
+      >
+        <button class="button" @click="toggleMinimizeData">
+          <CollapseRightSVG v-if="minimizeData" class="text-white" />
+          <CollapseLeftSVG v-else class="text-white" />
+        </button>
+      </div>
     </template>
   </aside>
 </template>
@@ -75,6 +83,10 @@ import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { AirfieldService } from "../../services/AirfieldService";
 import { Airfield, Chart } from "../../types/airfield";
 import Panzoom, { PanzoomObject } from "@panzoom/panzoom";
+import CollapseLeftSVG from "../Icons/CollapseLeftSVG.vue";
+import { useSidebarStore } from "../../stores/sidebarStore";
+import { storeToRefs } from "pinia";
+import CollapseRightSVG from "../Icons/CollapseRightSVG.vue";
 
 const canvas = ref<HTMLCanvasElement>();
 const fallbackCanvas = ref<HTMLCanvasElement>();
@@ -86,6 +98,9 @@ let pdf = null as pdfjs.PDFDocumentProxy | null;
 let page = null as pdfjs.PDFPageProxy | null;
 let panzoom = null as PanzoomObject | null;
 // let textLayerData = null as pdfjs.TextLayer | null;
+
+const { toggleMinimizeData } = useSidebarStore();
+const { minimizeData } = storeToRefs(useSidebarStore());
 
 const props = defineProps<{
   airfield: Airfield;

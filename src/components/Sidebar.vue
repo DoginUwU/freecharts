@@ -1,5 +1,5 @@
 <template>
-  <aside class="px-2 h-full flex flex-col pt-2">
+  <aside class="px-2 h-full flex flex-col py-2">
     <nav class="flex-1">
       <ol class="flex flex-col gap-1">
         <li
@@ -29,12 +29,19 @@
       </ol>
     </nav>
     <div class="mt-auto">
-      <button
+      <button class="w-full flex items-center justify-center pb-2">
+        <img
+          class="w-10 h-10 aspect-square rounded-full"
+          src="https://i.pinimg.com/736x/fa/5b/96/fa5b9671ba282904e574a7eccdc625aa.jpg"
+          alt="profile"
+        />
+      </button>
+      <!-- <button
         class="flex flex-col items-center justify-center aspect-square w-auto h-16 relative overflow-hidden rounded-xl p-2 transition select-none hover:bg-gray-800 mb-2"
         @click="toggleMinimizeData"
       >
         <i class="uil text-2xl uil-arrows-h-alt" />
-      </button>
+      </button> -->
     </div>
   </aside>
 </template>
@@ -42,9 +49,6 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { useSidebarStore } from "../stores/sidebarStore";
-
-const { toggleMinimizeData } = useSidebarStore();
 
 interface Menu {
   name: string;
