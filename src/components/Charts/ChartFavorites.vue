@@ -45,7 +45,7 @@ const emit = defineEmits<{
 
 defineProps<{
   selectedChart: Chart | null;
-  airfield: Airfield | null;
+  airfield?: Airfield | null;
 }>();
 
 const groupedChartsByICAO = computed(() => {

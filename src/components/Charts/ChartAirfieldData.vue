@@ -61,7 +61,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   selectedChart: Chart | null;
-  airfield: Airfield | null;
+  airfield?: Airfield | null;
   charts: Chart[];
 }>();
 
@@ -98,5 +98,6 @@ function handleKeyDownICAO(event: KeyboardEvent) {
 function handleICAO() {
   currentIcao.value = state.icao;
   emit("loadAirfield", state.icao);
+  state.icao = "";
 }
 </script>
