@@ -6,7 +6,7 @@
       v-model="state.icao"
       class="w-full"
       placeholder="ICAO"
-      @keydown="handleICAO"
+      @keydown="handleKeyDownICAO"
     />
     <template v-if="airfield">
       <div class="flex flex-col my-2">
@@ -44,10 +44,15 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, watch } from "vue";
+import { onBeforeMount, reactive, watch } from "vue";
 import { Airfield, Chart } from "../../types/airfield";
 import Input from "../Input.vue";
 import ChartList from "./ChartList.vue";
+import { storeToRefs } from "pinia";
+import { useChartsStore } from "../../stores/chartsStore";
+
+const chartsStore = useChartsStore();
+const { currentIcao } = storeToRefs(chartsStore);
 
 const emit = defineEmits<{
   loadChart: [chart: Chart];
@@ -61,7 +66,13 @@ const props = defineProps<{
 }>();
 
 const state = reactive({
-  icao: "",
+  icao: currentIcao.value,
+});
+
+onBeforeMount(() => {
+  if (currentIcao.value) {
+    handleICAO();
+  }
 });
 
 watch(
@@ -70,15 +81,22 @@ watch(
     state.icao = "";
   },
 );
+
 watch(
   () => state.icao,
   () => {
     state.icao = state.icao.toUpperCase();
   },
 );
-function handleICAO(event: KeyboardEvent) {
+
+function handleKeyDownICAO(event: KeyboardEvent) {
   if (event.code === "Enter" && state.icao.length === 4) {
-    emit("loadAirfield", state.icao.toUpperCase());
+    handleICAO();
   }
+}
+
+function handleICAO() {
+  currentIcao.value = state.icao;
+  emit("loadAirfield", state.icao);
 }
 </script>

@@ -56,12 +56,12 @@ const CHARTS_MENU: CheckboxItem[] = [
   {
     label: "Cartas",
     value: "charts",
-    color: "#9381ff",
+    color: "#6d5adb",
   },
   {
     label: "Favoritos",
     value: "favorites",
-    color: "#9381ff",
+    color: "#6d5adb",
   },
 ];
 
@@ -77,10 +77,6 @@ const state = reactive({
 
 onMounted(() => {
   sidebarStore.minimizeData = false;
-
-  // TODO: remove this
-  // state.icao = "sbgr";
-  // loadAirfieldByIcao();
 });
 
 async function loadAirfieldByIcao(icao: string) {

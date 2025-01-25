@@ -3,6 +3,7 @@ import { Chart } from "../types/airfield";
 
 export const useChartsStore = defineStore("charts", {
   state: () => ({
+    currentIcao: "",
     favoritedCharts: [] as Chart[],
   }),
   actions: {

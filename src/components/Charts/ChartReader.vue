@@ -65,7 +65,7 @@
       <div
         class="absolute top-4 left-4 flex items-center gap-2 max-w-[500px] flex-wrap"
       >
-        <button class="button" @click="toggleMinimizeData">
+        <button class="button" @click="sidebarStore.toggleMinimizeData">
           <CollapseRightSVG v-if="minimizeData" class="text-white" />
           <CollapseLeftSVG v-else class="text-white" />
         </button>
@@ -99,8 +99,8 @@ let page = null as pdfjs.PDFPageProxy | null;
 let panzoom = null as PanzoomObject | null;
 // let textLayerData = null as pdfjs.TextLayer | null;
 
-const { toggleMinimizeData } = useSidebarStore();
-const { minimizeData } = storeToRefs(useSidebarStore());
+const sidebarStore = useSidebarStore();
+const { minimizeData } = storeToRefs(sidebarStore);
 
 const props = defineProps<{
   airfield: Airfield;
