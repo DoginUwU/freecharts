@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-4 h-vh overflow-hidden">
+  <div class="flex h-vh overflow-hidden pt-4">
     <Transition name="airfield-anim" appear>
       <aside
         v-show="!minimizeData"

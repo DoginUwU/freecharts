@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, nextTick, reactive, ref, watch } from "vue";
 import { useChartsStore } from "../../stores/chartsStore";
 import { groupBy, mapValues } from "lodash-es";
 import { Chart, ChartType } from "../../types/airfield";
@@ -60,6 +60,7 @@ import CheckboxGroup, { CheckboxItem } from "../CheckboxGroup.vue";
 const container = ref<HTMLDivElement>();
 
 const chartTypesColorMap: Record<ChartType, string> = {
+  APP: "#00b4d8",
   GRD: "#9b5de5",
   SID: "#ba4c8e",
   STAR: "#c5a14d",
@@ -114,11 +115,14 @@ const currentChartTypeColor = computed(() => {
 
 watch(
   () => currentChartTypeColor.value,
-  (color) => {
+  async (color) => {
     if (!color) return;
+
+    await nextTick();
 
     container.value?.style.setProperty("--chart-type-color", color);
   },
+  { immediate: true },
 );
 
 watch(

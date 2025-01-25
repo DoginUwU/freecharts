@@ -15,5 +15,5 @@ export interface Chart {
   icao: string;
 }
 
-export type ChartType = "GRD" | "SID" | "STAR" | "VAC";
+export type ChartType = "GRD" | "APP" | "SID" | "STAR" | "VAC";
 export type ChartSubType = string | null;

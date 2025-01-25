@@ -21,10 +21,11 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
-    backgroundMaterial: "mica",
+    // backgroundMaterial: "mica",
     autoHideMenuBar: true,
     show: false,
     resizable: true,
+    titleBarStyle: "hidden",
 
     // frame: false
   });

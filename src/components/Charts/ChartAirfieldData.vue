@@ -70,6 +70,12 @@ watch(
     state.icao = "";
   },
 );
+watch(
+  () => state.icao,
+  () => {
+    state.icao = state.icao.toUpperCase();
+  },
+);
 function handleICAO(event: KeyboardEvent) {
   if (event.code === "Enter" && state.icao.length === 4) {
     emit("loadAirfield", state.icao.toUpperCase());

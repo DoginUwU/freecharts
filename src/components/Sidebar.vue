@@ -1,11 +1,11 @@
 <template>
-  <aside class="px-2 h-full flex flex-col">
+  <aside class="px-2 h-full flex flex-col pt-2">
     <nav class="flex-1">
-      <ol class="flex flex-col gap-2">
+      <ol class="flex flex-col gap-1">
         <li
           v-for="menu in MENUS"
           :key="menu.name"
-          class="flex flex-col items-center justify-center aspect-square w-auto h-16 relative overflow-hidden rounded-xl p-2 transition select-none"
+          class="flex flex-col items-center justify-center aspect-square w-16 h-16 relative overflow-hidden rounded-xl p-2 transition select-none"
           :class="{
             'bg-gray-700 [&>*]:text-primary': menu.selected,
             'hover:bg-gray-800': !menu.selected,

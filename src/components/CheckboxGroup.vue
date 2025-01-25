@@ -3,7 +3,7 @@
     <button
       v-for="item in items"
       :key="item.value"
-      class="bg-zinc-900/20 outline-none border text-sm px-3 py-1 rounded-full transition"
+      class="bg-zinc-900/20 outline-none border text-sm px-3 py-1 rounded-lg transition"
       :class="{
         '!text-white': isSelected(item),
       }"

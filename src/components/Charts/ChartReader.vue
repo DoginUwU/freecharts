@@ -41,6 +41,13 @@
           </button>
         </template>
       </div>
+      <span
+        class="absolute bottom-20 right-4 flex items-center gap-2 max-w-[500px] flex-wrap text-sm text-right touch-none pointer-events-none cursor-none drop-shadow-sm"
+      >
+        © Decea
+        <br />
+        Only for flight simulation
+      </span>
       <div
         class="absolute bottom-4 right-4 flex items-center gap-2 max-w-[500px] flex-wrap"
       >

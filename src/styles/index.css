@@ -2,8 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-body, #app {
-    background: transparent;
+body,
+#app {
+    background: #000;
     height: 100vh;
 }
 
