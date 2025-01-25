@@ -1,6 +1,7 @@
-import { app, screen, BrowserWindow } from "electron";
+import { app, screen, BrowserWindow, ipcMain } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
+import { BackendTasks } from "./backend/tasks";
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
@@ -70,3 +71,5 @@ app.on("window-all-closed", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+new BackendTasks(ipcMain);

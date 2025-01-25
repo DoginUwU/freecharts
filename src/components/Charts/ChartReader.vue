@@ -122,10 +122,16 @@ const state = reactive({
 
 onMounted(async () => {
   pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
-  const buffer = await AirfieldService.loadChart(
-    props.chart.icao,
-    props.chart.id,
-  );
+
+  const pdfFile = `${props.chart.id}.pdf`;
+
+  let buffer = await window.api.findCachedFile(pdfFile);
+
+  if (!buffer) {
+    buffer = await AirfieldService.loadChart(props.chart.icao, props.chart.id);
+    await window.api.cacheFile(pdfFile, buffer);
+  }
+
   pdf = await pdfjs.getDocument(buffer).promise;
   state.loaded = true;
 
@@ -254,7 +260,7 @@ function handleKeyDown(event: KeyboardEvent) {
       break;
     case "KeyR":
       if (!event.repeat) {
-        addRotation(90);
+        addRotation(-90);
       }
       break;
   }
