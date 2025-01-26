@@ -71,6 +71,11 @@
         </button>
       </div>
     </template>
+    <template v-else>
+      <div class="z-50 w-full h-full flex items-center justify-center">
+        <Loading />
+      </div>
+    </template>
   </aside>
 </template>
 
@@ -88,6 +93,7 @@ import { useSidebarStore } from "../../stores/sidebarStore";
 import { storeToRefs } from "pinia";
 import CollapseRightSVG from "../Icons/CollapseRightSVG.vue";
 import { useChartsStore } from "../../stores/chartsStore";
+import Loading from "../Loading.vue";
 
 const canvas = ref<HTMLCanvasElement>();
 const fallbackCanvas = ref<HTMLCanvasElement>();
