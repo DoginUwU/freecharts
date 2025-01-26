@@ -96,7 +96,9 @@ const state = reactive({
 });
 
 onMounted(() => {
-  sidebarStore.minimizeData = false;
+  if (!currentChart.value) {
+    sidebarStore.minimizeData = false;
+  }
 });
 
 // async function loadAirfieldByIcao(icao: string) {
