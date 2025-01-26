@@ -1,7 +1,7 @@
-import { app, IpcMainInvokeEvent } from "electron";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { ImplementedCacheFileTasks } from "./types";
+import { app, type IpcMainInvokeEvent } from "electron";
+import type { ImplementedCacheFileTasks } from "./types";
 
 export class CacheFileTasks implements ImplementedCacheFileTasks {
   constructor() {

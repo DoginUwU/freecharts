@@ -1,4 +1,5 @@
 import type { IpcMainInvokeEvent } from "electron";
+import type { Config } from "./ConfigTasks";
 
 export interface ImplementedCacheFileTasks {
   cacheFile(
@@ -13,7 +14,20 @@ export interface ImplementedCacheFileTasks {
   ): Promise<Buffer<ArrayBufferLike> | null>;
 }
 
-export type ImplementedTasks = ImplementedCacheFileTasks;
+export interface ImplementedConfigTasks {
+  setConfig<T extends keyof Config>(
+    event: IpcMainInvokeEvent,
+    key: T,
+    value: Config[T],
+  ): Promise<void>;
+  readConfig<T extends keyof Config>(
+    event: IpcMainInvokeEvent,
+    key: T,
+  ): Promise<Config[T] | null>;
+}
+
+export type ImplementedTasks = ImplementedCacheFileTasks &
+  ImplementedConfigTasks;
 
 export interface BackendTaskReturn<T> {
   onSuccess: () => T;

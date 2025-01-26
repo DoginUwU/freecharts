@@ -14,22 +14,22 @@
           v-show="state.currentTab === 'charts'"
           :airfield="currentAirfield"
           :charts="charts ?? []"
-          :selected-chart="state.currentChart"
+          :selected-chart="currentChart"
           @load-chart="loadChart"
         />
         <ChartFavorites
           v-show="state.currentTab === 'favorites'"
           :airfield="currentAirfield"
-          :selected-chart="state.currentChart"
+          :selected-chart="currentChart"
           @load-chart="loadChart"
         />
       </aside>
     </Transition>
     <ChartReader
-      v-if="currentAirfield && state.currentChart"
-      :key="state.currentChart.id"
+      v-if="currentAirfield && currentChart"
+      :key="currentChart.id"
       :airfield="currentAirfield"
-      :chart="state.currentChart"
+      :chart="currentChart"
     />
     <div v-else class="w-full h-full flex items-center justify-center flex-col">
       <h3 class="font-semibold text-xl">Aguardando instruções, comandante</h3>
@@ -70,7 +70,8 @@ const sidebarStore = useSidebarStore();
 const { minimizeData } = storeToRefs(sidebarStore);
 
 const chartsStore = useChartsStore();
-const { currentIcao } = storeToRefs(chartsStore);
+const { currentIcao, currentChart, currentChartPage } =
+  storeToRefs(chartsStore);
 
 const { data: currentAirfield } = useQuery({
   queryKey: ["airfield", currentIcao],
@@ -92,7 +93,6 @@ const { data: charts } = useQuery({
 
 const state = reactive({
   currentTab: CHARTS_MENU[0].value,
-  currentChart: null as Chart | null,
 });
 
 onMounted(() => {
@@ -102,12 +102,13 @@ onMounted(() => {
 // async function loadAirfieldByIcao(icao: string) {
 //   state.currentAirfield = await AirfieldService.findByICAO(icao);
 //   state.charts = await AirfieldService.findChartsByICAO(icao);
-//   // state.currentChartType = availableChartTypes.value[0].value;
+//   // currentChartType = availableChartTypes.value[0].value;
 //   // chartsStore.favoriteChart(state.charts[0]);
 // }
 
 async function loadChart(chart: Chart) {
-  state.currentChart = chart;
+  currentChartPage.value = 1;
+  currentChart.value = chart;
 }
 </script>
 

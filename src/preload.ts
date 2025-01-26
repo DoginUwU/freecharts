@@ -20,6 +20,9 @@ export function defineBackendTask<T extends keyof ImplementedTasks>(
 contextBridge.exposeInMainWorld("api", {
   cacheFile: defineBackendTask(ipcRenderer, "cacheFile"),
   findCachedFile: defineBackendTask(ipcRenderer, "findCachedFile"),
+
+  setConfig: defineBackendTask(ipcRenderer, "setConfig"),
+  readConfig: defineBackendTask(ipcRenderer, "readConfig"),
 });
 
 declare global {
@@ -27,6 +30,9 @@ declare global {
     api: {
       cacheFile: BackendTask<"cacheFile">;
       findCachedFile: BackendTask<"findCachedFile">;
+
+      setConfig: BackendTask<"setConfig">;
+      readConfig: BackendTask<"readConfig">;
     };
   }
 }

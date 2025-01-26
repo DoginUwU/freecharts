@@ -14,7 +14,7 @@
           ref="panContainer"
           :style="{
             transform: `rotate(${state.rotation}deg)`,
-            filter: state.invertColors ? 'invert(100%)' : '',
+            filter: invertColors ? 'invert(100%)' : '',
           }"
         >
           <canvas ref="canvas" class="absolute top-0 left-0 w-full h-full" />
@@ -51,8 +51,8 @@
       <div
         class="absolute bottom-4 right-4 flex items-center gap-2 max-w-[500px] flex-wrap"
       >
-        <button class="button" @click="toggleInvertColors">
-          <i v-if="state.invertColors" class="uil uil-sun" />
+        <button class="button" @click="chartsStore.toggleChartsTheme">
+          <i v-if="invertColors" class="uil uil-sun" />
           <i v-else class="uil uil-moon" />
         </button>
         <button class="button" @click="addRotation(90)">
@@ -79,7 +79,7 @@
 import workerSrc from "pdfjs-dist/build/pdf.worker?worker&url";
 import "pdfjs-dist/web/pdf_viewer.css";
 import * as pdfjs from "pdfjs-dist";
-import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { AirfieldService } from "../../services/AirfieldService";
 import { Airfield, Chart } from "../../types/airfield";
 import Panzoom, { PanzoomObject } from "@panzoom/panzoom";
@@ -87,6 +87,7 @@ import CollapseLeftSVG from "../Icons/CollapseLeftSVG.vue";
 import { useSidebarStore } from "../../stores/sidebarStore";
 import { storeToRefs } from "pinia";
 import CollapseRightSVG from "../Icons/CollapseRightSVG.vue";
+import { useChartsStore } from "../../stores/chartsStore";
 
 const canvas = ref<HTMLCanvasElement>();
 const fallbackCanvas = ref<HTMLCanvasElement>();
@@ -100,7 +101,9 @@ let panzoom = null as PanzoomObject | null;
 // let textLayerData = null as pdfjs.TextLayer | null;
 
 const sidebarStore = useSidebarStore();
+const chartsStore = useChartsStore();
 const { minimizeData } = storeToRefs(sidebarStore);
+const { chartsTheme, currentChartPage } = storeToRefs(chartsStore);
 
 const props = defineProps<{
   airfield: Airfield;
@@ -109,11 +112,9 @@ const props = defineProps<{
 
 const state = reactive({
   loaded: false,
-  page: 1,
   scale: 1,
   renderInProgress: false,
   rotation: 0,
-  invertColors: false,
   test: false,
   keys: {
     control: false,
@@ -150,6 +151,10 @@ onBeforeUnmount(() => {
   document.removeEventListener("keyup", handleKeyUp);
 });
 
+const invertColors = computed(() => {
+  return chartsTheme.value === "dark";
+});
+
 async function renderPage() {
   if (
     !canvas.value ||
@@ -163,8 +168,8 @@ async function renderPage() {
 
   const ratio = window.devicePixelRatio;
 
-  if (!page || page.pageNumber !== state.page) {
-    page = await pdf.getPage(state.page);
+  if (!page || page.pageNumber !== currentChartPage.value) {
+    page = await pdf.getPage(currentChartPage.value);
 
     const fallbackContext = fallbackCanvas.value.getContext("2d")!;
     const fallbackViewport = page.getViewport({ scale: 1 });
@@ -243,7 +248,7 @@ function handleZoom(event: WheelEvent) {
 }
 
 function changePage(page: number) {
-  state.page = page;
+  currentChartPage.value = page;
   renderPage();
 }
 
@@ -270,10 +275,6 @@ function handleKeyUp(event: KeyboardEvent) {
   if (event.code === "ControlLeft") {
     state.keys.control = false;
   }
-}
-
-function toggleInvertColors() {
-  state.invertColors = !state.invertColors;
 }
 </script>
 
