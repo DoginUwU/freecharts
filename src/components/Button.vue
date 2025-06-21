@@ -1,6 +1,6 @@
 <template>
   <button
-    class="bg-zinc-900/20 outline-none border border-zinc-700 rounded-lg px-4 py-2 text-sm hover:border-primary transition-colors"
+    class="bg-zinc-900/70 outline-none rounded-lg px-4 py-2 text-sm hover:bg-primary transition-colors"
     v-bind="$attrs"
   >
     <slot />

@@ -1,15 +1,14 @@
 <template>
-  <div class="flex gap-2 flex-wrap">
+  <div class="flex gap-2 flex-wrap select-none">
     <button
       v-for="item in items"
       :key="item.value"
-      class="bg-zinc-900/20 outline-none border text-sm px-3 py-1 rounded-lg transition"
+      class="bg-zinc-900/70 hover:bg-zinc-900/50 outline-none text-sm px-3 py-1 rounded-lg transition"
       :class="{
         '!text-white': isSelected(item),
       }"
       :style="{
-        borderColor: item.color,
-        backgroundColor: isSelected(item) ? item.color : 'transparent',
+        backgroundColor: isSelected(item) ? item.color : '',
       }"
       @click="handleSelect(item)"
     >

@@ -42,7 +42,7 @@
         </template>
       </div>
       <span
-        class="absolute bottom-20 right-4 flex items-center gap-2 max-w-[500px] flex-wrap text-sm text-right touch-none pointer-events-none cursor-none drop-shadow-sm"
+        class="absolute bottom-16 right-4 flex items-center gap-2 max-w-[500px] flex-wrap text-sm text-right touch-none pointer-events-none cursor-none drop-shadow-sm"
       >
         © Decea
         <br />
@@ -286,7 +286,7 @@ function handleKeyUp(event: KeyboardEvent) {
 
 <style scoped>
 .button {
-  @apply bg-zinc-900/90 border border-zinc-700 outline-primary hover:border-primary hover:text-primary w-12 h-12 rounded-lg flex items-center justify-center backdrop-blur-sm;
+  @apply bg-zinc-900/90 border-zinc-700 outline-primary hover:bg-primary transition w-9 h-9 rounded-lg flex items-center justify-center backdrop-blur-sm;
 }
 
 .fallback-canvas {

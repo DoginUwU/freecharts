@@ -21,11 +21,10 @@
           <li
             v-for="(chart, index) in charts"
             :key="chart.id"
-            class="chart-type w-full flex justify-start bg-zinc-900/20 outline-none border-x border-b border-zinc-700 p-2 transition-colors group"
+            class="chart-type rounded-lg w-full flex justify-start bg-zinc-900/70 outline-none p-2 transition-colors group"
             :class="{
-              'border-t rounded-t-lg': index === 0,
-              'border-b rounded-b-lg': index === charts.length - 1,
               active: selectedChart?.id === chart.id,
+              'mt-2': index > 0,
             }"
             role="button"
             @click="emit('loadChart', chart)"
