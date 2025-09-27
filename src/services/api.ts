@@ -1,7 +1,8 @@
 import axios from "axios";
+import { config } from "../environment";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: config.apiUrl,
   headers: {
     provider: "aisweb",
   },
