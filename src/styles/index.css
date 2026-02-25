@@ -4,26 +4,26 @@
 
 body,
 #app {
-    background: #000;
-    height: 100vh;
+	background: #000;
+	height: 100vh;
 }
 
 * {
-    @apply text-zinc-300;
-    image-rendering: pixelated
+	@apply text-zinc-300;
+	image-rendering: pixelated;
 }
 
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+	width: 6px;
+	height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 10px;
+	background: rgba(255, 255, 255, 0.4);
+	border-radius: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 10px;
+	background: transparent;
+	border-radius: 10px;
 }

@@ -19,52 +19,52 @@ import { ref } from "vue";
 const content = ref(null);
 
 defineProps<{
-  open: boolean;
+	open: boolean;
 }>();
 
 const beforeEnter = (el: unknown) => {
-  if (!(el instanceof HTMLElement)) return;
+	if (!(el instanceof HTMLElement)) return;
 
-  el.style.height = "0";
-  el.style.opacity = "0";
-  el.style.overflow = "hidden";
+	el.style.height = "0";
+	el.style.opacity = "0";
+	el.style.overflow = "hidden";
 };
 
 const enter = (el: unknown) => {
-  if (!(el instanceof HTMLElement)) return;
+	if (!(el instanceof HTMLElement)) return;
 
-  el.style.height = `${el.scrollHeight}px`;
-  el.style.opacity = "1";
+	el.style.height = `${el.scrollHeight}px`;
+	el.style.opacity = "1";
 };
 
 const afterEnter = (el: unknown) => {
-  if (!(el instanceof HTMLElement)) return;
+	if (!(el instanceof HTMLElement)) return;
 
-  el.style.height = "auto";
-  el.style.overflow = "visible";
+	el.style.height = "auto";
+	el.style.overflow = "visible";
 };
 
 const beforeLeave = (el: unknown) => {
-  if (!(el instanceof HTMLElement)) return;
+	if (!(el instanceof HTMLElement)) return;
 
-  el.style.height = `${el.scrollHeight}px`;
-  el.style.opacity = "1";
-  el.style.overflow = "hidden";
+	el.style.height = `${el.scrollHeight}px`;
+	el.style.opacity = "1";
+	el.style.overflow = "hidden";
 };
 
 const leave = (el: unknown) => {
-  if (!(el instanceof HTMLElement)) return;
+	if (!(el instanceof HTMLElement)) return;
 
-  requestAnimationFrame(() => {
-    el.style.height = "0";
-    el.style.opacity = "0";
-  });
+	requestAnimationFrame(() => {
+		el.style.height = "0";
+		el.style.opacity = "0";
+	});
 };
 
 const afterLeave = (el: unknown) => {
-  if (!(el instanceof HTMLElement)) return;
+	if (!(el instanceof HTMLElement)) return;
 
-  el.style.overflow = "";
+	el.style.overflow = "";
 };
 </script>
 

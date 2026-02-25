@@ -50,92 +50,92 @@
 </template>
 
 <script lang="ts" setup>
+import { groupBy, mapValues } from "lodash-es";
 import { computed, nextTick, reactive, ref, watch } from "vue";
 import { useChartsStore } from "../../stores/chartsStore";
-import { groupBy, mapValues } from "lodash-es";
-import { Chart, ChartType } from "../../types/airfield";
-import CheckboxGroup, { CheckboxItem } from "../CheckboxGroup.vue";
+import type { Chart, ChartType } from "../../types/airfield";
+import CheckboxGroup, { type CheckboxItem } from "../CheckboxGroup.vue";
 
 const container = ref<HTMLDivElement>();
 
 const chartTypesColorMap: Record<ChartType, string> = {
-  APP: "#00b4d8",
-  GRD: "#9b5de5",
-  SID: "#ba4c8e",
-  STAR: "#c5a14d",
-  VAC: "#03ad96",
+	APP: "#00b4d8",
+	GRD: "#9b5de5",
+	SID: "#ba4c8e",
+	STAR: "#c5a14d",
+	VAC: "#03ad96",
 };
 
 const props = defineProps<{
-  selectedChart: Chart | null;
-  charts: Chart[];
+	selectedChart: Chart | null;
+	charts: Chart[];
 }>();
 
 const emit = defineEmits<{
-  loadChart: [chart: Chart];
+	loadChart: [chart: Chart];
 }>();
 
 const state = reactive({
-  currentChartType: "",
+	currentChartType: "",
 });
 
 const chartsStore = useChartsStore();
 
 const groupedCharts = computed(() => {
-  const dictionary = groupBy(props.charts, (chart) => chart.type);
-  const subDictionary = mapValues(dictionary, (group) =>
-    groupBy(group, (chart) => chart.subType),
-  );
+	const dictionary = groupBy(props.charts, (chart) => chart.type);
+	const subDictionary = mapValues(dictionary, (group) =>
+		groupBy(group, (chart) => chart.subType),
+	);
 
-  return subDictionary;
+	return subDictionary;
 });
 
 const availableChartTypes = computed(() => {
-  return Array.from(new Set(props.charts.map((chart) => chart.type)))
-    .sort((a, b) => {
-      if (!chartTypesColorMap[a]) return 1;
+	return Array.from(new Set(props.charts.map((chart) => chart.type)))
+		.sort((a, b) => {
+			if (!chartTypesColorMap[a]) return 1;
 
-      return a.localeCompare(b);
-    })
-    .map<CheckboxItem>((type) => ({
-      label: type,
-      value: type,
-      color: chartTypesColorMap[type] ?? "#000",
-    }));
+			return a.localeCompare(b);
+		})
+		.map<CheckboxItem>((type) => ({
+			label: type,
+			value: type,
+			color: chartTypesColorMap[type] ?? "#000",
+		}));
 });
 
 const currentChartTypeColor = computed(() => {
-  const firstOfType = availableChartTypes.value.find(
-    (type) => type.value === state.currentChartType,
-  );
+	const firstOfType = availableChartTypes.value.find(
+		(type) => type.value === state.currentChartType,
+	);
 
-  return firstOfType?.color;
+	return firstOfType?.color;
 });
 
 watch(
-  () => currentChartTypeColor.value,
-  async (color) => {
-    if (!color) return;
+	() => currentChartTypeColor.value,
+	async (color) => {
+		if (!color) return;
 
-    await nextTick();
+		await nextTick();
 
-    container.value?.style.setProperty("--chart-type-color", color);
-  },
-  { immediate: true },
+		container.value?.style.setProperty("--chart-type-color", color);
+	},
+	{ immediate: true },
 );
 
 watch(
-  () => availableChartTypes.value.length,
-  () => {
-    state.currentChartType = availableChartTypes.value[0]?.value;
-  },
-  {
-    immediate: true,
-  },
+	() => availableChartTypes.value.length,
+	() => {
+		state.currentChartType = availableChartTypes.value[0]?.value;
+	},
+	{
+		immediate: true,
+	},
 );
 
 function handleChangeChartType(newType: string) {
-  state.currentChartType = newType;
+	state.currentChartType = newType;
 }
 </script>
 

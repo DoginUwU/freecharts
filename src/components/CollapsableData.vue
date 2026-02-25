@@ -28,15 +28,15 @@ import { reactive } from "vue";
 import CollapseTransition from "./CollapseTransition.vue";
 
 defineProps<{
-  title: string;
+	title: string;
 }>();
 
 const state = reactive({
-  open: false,
+	open: false,
 });
 
 function toggleOpen() {
-  state.open = !state.open;
+	state.open = !state.open;
 }
 </script>
 

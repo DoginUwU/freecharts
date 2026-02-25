@@ -1,36 +1,17 @@
 <template>
   <div class="flex h-vh overflow-hidden pt-4">
     <Transition name="airfield-anim" appear>
-      <aside
-        v-show="!minimizeData"
-        class="flex flex-col items-center text-center gap-2 min-w-80 w-80 overflow-y-auto pr-2 mb-2"
-      >
-        <CheckboxGroup
-          :items="CHARTS_MENU"
-          :selecteds="[state.currentTab]"
-          @select="state.currentTab = $event"
-        />
-        <ChartAirfieldData
-          v-show="state.currentTab === 'charts'"
-          :airfield="currentAirfield"
-          :charts="charts ?? []"
-          :selected-chart="currentChart"
-          @load-chart="loadChart"
-        />
-        <ChartFavorites
-          v-show="state.currentTab === 'favorites'"
-          :airfield="currentAirfield"
-          :selected-chart="currentChart"
-          @load-chart="loadChart"
-        />
+      <aside v-show="!minimizeData"
+        class="flex flex-col items-center text-center gap-2 min-w-80 w-80 overflow-y-auto pr-2 mb-2">
+        <CheckboxGroup :items="CHARTS_MENU" :selecteds="[state.currentTab]" @select="state.currentTab = $event" />
+        <ChartAirfieldData v-show="state.currentTab === 'charts'" :airfield="currentAirfield" :charts="charts ?? []"
+          :selected-chart="currentChart" @load-chart="loadChart" />
+        <ChartFavorites v-show="state.currentTab === 'favorites'" :airfield="currentAirfield"
+          :selected-chart="currentChart" @load-chart="loadChart" />
       </aside>
     </Transition>
-    <ChartReader
-      v-if="currentAirfield && currentChart"
-      :key="currentChart.id"
-      :airfield="currentAirfield"
-      :chart="currentChart"
-    />
+    <ChartReader v-if="currentAirfield && currentChart" :key="currentChart.id" :airfield="currentAirfield"
+      :chart="currentChart" />
     <div v-else class="w-full h-full flex items-center justify-center flex-col">
       <h3 class="font-semibold text-xl">Aguardando instruções, comandante</h3>
       <span class="opacity-85">
@@ -41,29 +22,31 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive } from "vue";
-import ChartReader from "../components/Charts/ChartReader.vue";
-import { Chart } from "../types/airfield";
-import { AirfieldService } from "../services/AirfieldService";
-import { useSidebarStore } from "../stores/sidebarStore";
-import { storeToRefs } from "pinia";
-import ChartAirfieldData from "../components/Charts/ChartAirfieldData.vue";
-import CheckboxGroup, { CheckboxItem } from "../components/CheckboxGroup.vue";
-import ChartFavorites from "../components/Charts/ChartFavorites.vue";
-import { useChartsStore } from "../stores/chartsStore";
 import { useQuery } from "@tanstack/vue-query";
+import { storeToRefs } from "pinia";
+import { onMounted, reactive } from "vue";
+import ChartAirfieldData from "../components/Charts/ChartAirfieldData.vue";
+import ChartFavorites from "../components/Charts/ChartFavorites.vue";
+import ChartReader from "../components/Charts/ChartReader.vue";
+import CheckboxGroup, {
+	type CheckboxItem,
+} from "../components/CheckboxGroup.vue";
+import { airfieldService } from "../services/AirfieldService";
+import { useChartsStore } from "../stores/chartsStore";
+import { useSidebarStore } from "../stores/sidebarStore";
+import type { Chart } from "../types/airfield";
 
 const CHARTS_MENU: CheckboxItem[] = [
-  {
-    label: "Cartas",
-    value: "charts",
-    color: "#6d5adb",
-  },
-  {
-    label: "Favoritos",
-    value: "favorites",
-    color: "#6d5adb",
-  },
+	{
+		label: "Cartas",
+		value: "charts",
+		color: "#6d5adb",
+	},
+	{
+		label: "Favoritos",
+		value: "favorites",
+		color: "#6d5adb",
+	},
 ];
 
 const sidebarStore = useSidebarStore();
@@ -71,46 +54,46 @@ const { minimizeData } = storeToRefs(sidebarStore);
 
 const chartsStore = useChartsStore();
 const { currentIcao, currentChart, currentChartPage } =
-  storeToRefs(chartsStore);
+	storeToRefs(chartsStore);
 
 const { data: currentAirfield } = useQuery({
-  queryKey: ["airfield", currentIcao],
-  queryFn: async () => {
-    if (!currentIcao.value) return null;
-    return AirfieldService.findByICAO(currentIcao.value);
-  },
-  staleTime: Infinity,
+	queryKey: ["airfield", currentIcao],
+	queryFn: async () => {
+		if (!currentIcao.value) return null;
+		return airfieldService.findByICAO(currentIcao.value);
+	},
+	staleTime: Infinity,
 });
 
 const { data: charts } = useQuery({
-  queryKey: ["airfield", "charts", currentIcao],
-  queryFn: async () => {
-    if (!currentIcao.value) return null;
-    return AirfieldService.findChartsByICAO(currentIcao.value);
-  },
-  staleTime: Infinity,
+	queryKey: ["airfield", "charts", currentIcao],
+	queryFn: async () => {
+		if (!currentIcao.value) return null;
+		return airfieldService.findChartsByICAO(currentIcao.value);
+	},
+	staleTime: Infinity,
 });
 
 const state = reactive({
-  currentTab: CHARTS_MENU[0].value,
+	currentTab: CHARTS_MENU[0].value,
 });
 
 onMounted(() => {
-  if (!currentChart.value) {
-    sidebarStore.minimizeData = false;
-  }
+	if (!currentChart.value) {
+		sidebarStore.minimizeData = false;
+	}
 });
 
 // async function loadAirfieldByIcao(icao: string) {
-//   state.currentAirfield = await AirfieldService.findByICAO(icao);
-//   state.charts = await AirfieldService.findChartsByICAO(icao);
+//   state.currentAirfield = await airfieldService.findByICAO(icao);
+//   state.charts = await airfieldService.findChartsByICAO(icao);
 //   // currentChartType = availableChartTypes.value[0].value;
 //   // chartsStore.favoriteChart(state.charts[0]);
 // }
 
 async function loadChart(chart: Chart) {
-  currentChartPage.value = 1;
-  currentChart.value = chart;
+	currentChartPage.value = 1;
+	currentChart.value = chart;
 }
 </script>
 

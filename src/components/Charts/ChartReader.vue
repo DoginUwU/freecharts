@@ -1,98 +1,75 @@
 <template>
-  <aside class="flex flex-1 relative overflow-hidden">
-    <div
-      class="flex flex-1 w-full h-full items-start justify-start relative bg-zinc-700/30 rounded-tl-lg overflow-auto"
-      ref="container"
-      @wheel="handleZoom"
-    >
-      <div
-        class="relative canvas-container w-full h-full flex items-center justify-center"
-        ref="canvasContainer"
-      >
-        <div
-          class="relative"
-          ref="panContainer"
-          :style="{
-            transform: `rotate(${state.rotation}deg)`,
-            filter: invertColors ? 'invert(100%)' : '',
-          }"
-        >
-          <canvas ref="canvas" class="absolute top-0 left-0 w-full h-full" />
-          <canvas
-            ref="fallbackCanvas"
-            class="absolute top-0 left-0 w-full h-full fallback-canvas"
-          />
-        </div>
-        <!-- <div ref="textLayer" class="textLayer" /> -->
-      </div>
-    </div>
-    <template v-if="state.loaded && pdf">
-      <div
-        class="absolute bottom-4 left-4 flex items-center gap-2 max-w-[500px] flex-wrap"
-      >
-        <template v-if="pdf.numPages > 1">
-          <button
-            v-for="page in Math.min(pdf.numPages, 5)"
-            :key="page"
-            class="button"
-            @click="changePage(page)"
-          >
-            {{ page }}
-          </button>
-        </template>
-      </div>
-      <span
-        class="absolute bottom-16 right-4 flex items-center gap-2 max-w-[500px] flex-wrap text-sm text-right touch-none pointer-events-none cursor-none drop-shadow-sm"
-      >
-        © Decea
-        <br />
-        Only for flight simulation
-      </span>
-      <div
-        class="absolute bottom-4 right-4 flex items-center gap-2 max-w-[500px] flex-wrap"
-      >
-        <button class="button" @click="chartsStore.toggleChartsTheme">
-          <i v-if="invertColors" class="uil uil-sun" />
-          <i v-else class="uil uil-moon" />
-        </button>
-        <button class="button" @click="addRotation(90)">
-          <i class="uil uil-corner-left-down" />
-        </button>
-        <button class="button" @click="addRotation(-90)">
-          <i class="uil uil-corner-left-down rotate-90" />
-        </button>
-      </div>
-      <div
-        class="absolute top-4 left-4 flex items-center gap-2 max-w-[500px] flex-wrap"
-      >
-        <button class="button" @click="sidebarStore.toggleMinimizeData">
-          <CollapseRightSVG v-if="minimizeData" class="text-white" />
-          <CollapseLeftSVG v-else class="text-white" />
-        </button>
-      </div>
-    </template>
-    <template v-else>
-      <div class="z-50 w-full h-full flex items-center justify-center">
-        <Loading />
-      </div>
-    </template>
-  </aside>
+	<aside class="flex flex-1 relative overflow-hidden">
+		<div class="flex flex-1 w-full h-full items-start justify-start relative bg-zinc-700/30 rounded-tl-lg overflow-auto"
+			ref="container" @wheel="handleZoom">
+			<div class="relative canvas-container w-full h-full flex items-center justify-center" ref="canvasContainer">
+				<div class="relative" ref="panContainer" :style="{
+					transform: `rotate(${state.rotation}deg)`,
+					filter: invertColors ? 'invert(100%)' : '',
+				}">
+					<canvas ref="canvas" class="absolute top-0 left-0 w-full h-full" />
+					<canvas ref="fallbackCanvas" class="absolute top-0 left-0 w-full h-full fallback-canvas" />
+				</div>
+				<!-- <div ref="textLayer" class="textLayer" /> -->
+			</div>
+		</div>
+		<template v-if="state.loaded && pdf">
+			<div class="absolute bottom-4 left-4 flex items-center gap-2 max-w-[500px] flex-wrap">
+				<template v-if="pdf.numPages > 1">
+					<button v-for="page in Math.min(pdf.numPages, 5)" :key="page" class="button"
+						@click="changePage(page)">
+						{{ page }}
+					</button>
+				</template>
+			</div>
+			<span
+				class="absolute bottom-16 right-4 flex items-center gap-2 max-w-[500px] flex-wrap text-sm text-right touch-none pointer-events-none cursor-none drop-shadow-sm">
+				© Decea
+				<br />
+				Only for flight simulation
+			</span>
+			<div class="absolute bottom-4 right-4 flex items-center gap-2 max-w-[500px] flex-wrap">
+				<button class="button" @click="chartsStore.toggleChartsTheme">
+					<i v-if="invertColors" class="uil uil-sun" />
+					<i v-else class="uil uil-moon" />
+				</button>
+				<button class="button" @click="addRotation(90)">
+					<i class="uil uil-corner-left-down" />
+				</button>
+				<button class="button" @click="addRotation(-90)">
+					<i class="uil uil-corner-left-down rotate-90" />
+				</button>
+			</div>
+			<div class="absolute top-4 left-4 flex items-center gap-2 max-w-[500px] flex-wrap">
+				<button class="button" @click="sidebarStore.toggleMinimizeData">
+					<CollapseRightSVG v-if="minimizeData" class="text-white" />
+					<CollapseLeftSVG v-else class="text-white" />
+				</button>
+			</div>
+		</template>
+		<template v-else>
+			<div class="z-50 w-full h-full flex items-center justify-center">
+				<Loading />
+			</div>
+		</template>
+	</aside>
 </template>
 
 <script lang="ts" setup>
 // @ts-expect-error - typescript doesnt recognizes the build folder
 import workerSrc from "pdfjs-dist/build/pdf.worker?worker&url";
+// @ts-expect-error - typescript doesnt recognizes the build folder
 import "pdfjs-dist/web/pdf_viewer.css";
+import Panzoom, { type PanzoomObject } from "@panzoom/panzoom";
 import * as pdfjs from "pdfjs-dist";
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
-import { AirfieldService } from "../../services/AirfieldService";
-import { Airfield, Chart } from "../../types/airfield";
-import Panzoom, { PanzoomObject } from "@panzoom/panzoom";
-import CollapseLeftSVG from "../Icons/CollapseLeftSVG.vue";
-import { useSidebarStore } from "../../stores/sidebarStore";
 import { storeToRefs } from "pinia";
-import CollapseRightSVG from "../Icons/CollapseRightSVG.vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { airfieldService } from "../../services/AirfieldService";
 import { useChartsStore } from "../../stores/chartsStore";
+import { useSidebarStore } from "../../stores/sidebarStore";
+import type { Airfield, Chart } from "../../types/airfield";
+import CollapseLeftSVG from "../Icons/CollapseLeftSVG.vue";
+import CollapseRightSVG from "../Icons/CollapseRightSVG.vue";
 import Loading from "../Loading.vue";
 
 const canvas = ref<HTMLCanvasElement>();
@@ -112,185 +89,194 @@ const { minimizeData } = storeToRefs(sidebarStore);
 const { chartsTheme, currentChartPage } = storeToRefs(chartsStore);
 
 const props = defineProps<{
-  airfield: Airfield;
-  chart: Chart;
+	airfield: Airfield;
+	chart: Chart;
 }>();
 
 const state = reactive({
-  loaded: false,
-  scale: 1,
-  renderInProgress: false,
-  rotation: 0,
-  test: false,
-  keys: {
-    control: false,
-  },
+	loaded: false,
+	scale: 1,
+	renderInProgress: false,
+	rotation: 0,
+	test: false,
+	keys: {
+		control: false,
+	},
 });
 
 onMounted(async () => {
-  pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+	pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
-  const pdfFile = `${props.chart.id}.pdf`;
+	const pdfFile = `${props.chart.id}.pdf`;
 
-  let buffer = await window.api.findCachedFile(pdfFile);
+	let buffer = await window.api.findCachedFile(pdfFile);
 
-  if (!buffer) {
-    buffer = await AirfieldService.loadChart(props.chart.icao, props.chart.id);
-    await window.api.cacheFile(pdfFile, buffer);
-  }
+	if (!buffer) {
+		buffer = await airfieldService.loadChart(props.chart.icao, props.chart.id);
 
-  pdf = await pdfjs.getDocument(buffer).promise;
-  state.loaded = true;
+		if (!buffer) {
+			console.error("Failed to load chart PDF");
+			return;
+		}
 
-  await renderPage();
+		await window.api.cacheFile(pdfFile, buffer);
+	}
 
-  document.addEventListener("keydown", handleKeyDown);
-  document.addEventListener("keyup", handleKeyUp);
+	pdf = await pdfjs.getDocument(buffer).promise;
+	state.loaded = true;
 
-  if (!canvasContainer.value) return;
+	await renderPage();
 
-  panzoom = Panzoom(canvasContainer.value);
+	document.addEventListener("keydown", handleKeyDown);
+	document.addEventListener("keyup", handleKeyUp);
+
+	if (!canvasContainer.value) return;
+
+	panzoom = Panzoom(canvasContainer.value);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener("keydown", handleKeyDown);
-  document.removeEventListener("keyup", handleKeyUp);
+	document.removeEventListener("keydown", handleKeyDown);
+	document.removeEventListener("keyup", handleKeyUp);
 });
 
 const invertColors = computed(() => {
-  return chartsTheme.value === "dark";
+	return chartsTheme.value === "dark";
 });
 
 async function renderPage() {
-  if (
-    !canvas.value ||
-    !fallbackCanvas.value ||
-    !panContainer.value ||
-    state.renderInProgress ||
-    !pdf
-  ) {
-    return;
-  }
+	if (
+		!canvas.value ||
+		!fallbackCanvas.value ||
+		!panContainer.value ||
+		state.renderInProgress ||
+		!pdf
+	) {
+		return;
+	}
 
-  const ratio = window.devicePixelRatio;
+	const ratio = window.devicePixelRatio;
 
-  if (!page || page.pageNumber !== currentChartPage.value) {
-    page = await pdf.getPage(currentChartPage.value);
+	if (!page || page.pageNumber !== currentChartPage.value) {
+		page = await pdf.getPage(currentChartPage.value);
 
-    const fallbackContext = fallbackCanvas.value.getContext("2d")!;
-    const fallbackViewport = page.getViewport({ scale: 1 });
-    fallbackCanvas.value.width = fallbackViewport.width * ratio;
-    fallbackCanvas.value.height = fallbackViewport.height * ratio;
-    await page.render({
-      canvasContext: fallbackContext,
-      viewport: fallbackViewport,
-      annotationMode: 0,
-    }).promise;
+		const fallbackContext = fallbackCanvas.value.getContext("2d");
 
-    panContainer.value.style.width = `${fallbackCanvas.value.width}px`;
-    panContainer.value.style.height = `${fallbackCanvas.value.height}px`;
-  }
+		if (!fallbackContext) return;
 
-  const context = canvas.value.getContext("2d");
+		const fallbackViewport = page.getViewport({ scale: 1 });
+		fallbackCanvas.value.width = fallbackViewport.width * ratio;
+		fallbackCanvas.value.height = fallbackViewport.height * ratio;
+		await page.render({
+			canvasContext: fallbackContext,
+			viewport: fallbackViewport,
+			annotationMode: 0,
+		}).promise;
 
-  if (!context) return;
+		panContainer.value.style.width = `${fallbackCanvas.value.width}px`;
+		panContainer.value.style.height = `${fallbackCanvas.value.height}px`;
+	}
 
-  state.renderInProgress = true;
-  fallbackCanvas.value.style.display = "block";
+	const context = canvas.value.getContext("2d");
 
-  const viewport = page.getViewport({ scale: state.scale });
+	if (!context) return;
 
-  canvas.value.width = viewport.width * ratio;
-  canvas.value.height = viewport.height * ratio;
-  context.scale(ratio, ratio);
+	state.renderInProgress = true;
+	fallbackCanvas.value.style.display = "block";
 
-  await page.render({
-    canvasContext: context,
-    viewport,
-    annotationMode: 0,
-  }).promise;
+	const viewport = page.getViewport({ scale: state.scale });
 
-  // if (!textLayerData) {
-  //   if (!page || !textLayer.value) return;
+	canvas.value.width = viewport.width * ratio;
+	canvas.value.height = viewport.height * ratio;
+	context.scale(ratio, ratio);
 
-  //   textLayer.value.innerHTML = "";
+	await page.render({
+		canvasContext: context,
+		viewport,
+		annotationMode: 0,
+	}).promise;
 
-  //   const textContent = await page.getTextContent();
+	// if (!textLayerData) {
+	//   if (!page || !textLayer.value) return;
 
-  //   textLayerData = new pdfjs.TextLayer({
-  //     container: textLayer.value,
-  //     textContentSource: textContent,
-  //     viewport,
-  //   });
-  //   await textLayerData.render();
-  // }
+	//   textLayer.value.innerHTML = "";
 
-  // textLayer.value.style.setProperty("--scale-factor", String(state.scale));
+	//   const textContent = await page.getTextContent();
 
-  fallbackCanvas.value.style.display = "none";
-  state.renderInProgress = false;
+	//   textLayerData = new pdfjs.TextLayer({
+	//     container: textLayer.value,
+	//     textContentSource: textContent,
+	//     viewport,
+	//   });
+	//   await textLayerData.render();
+	// }
+
+	// textLayer.value.style.setProperty("--scale-factor", String(state.scale));
+
+	fallbackCanvas.value.style.display = "none";
+	state.renderInProgress = false;
 }
 
 function handleZoom(event: WheelEvent) {
-  if (!container.value) return;
+	if (!container.value) return;
 
-  event.preventDefault();
+	event.preventDefault();
 
-  const zoomStep = 0.2;
-  const delta = event.deltaY > 0 ? -zoomStep : zoomStep;
-  const newScale = Math.min(Math.max(state.scale + delta, 0.5), 5);
+	const zoomStep = 0.2;
+	const delta = event.deltaY > 0 ? -zoomStep : zoomStep;
+	const newScale = Math.min(Math.max(state.scale + delta, 0.5), 5);
 
-  if (newScale === state.scale) return;
+	if (newScale === state.scale) return;
 
-  state.scale = newScale;
+	state.scale = newScale;
 
-  const currentPan = panzoom?.getPan();
+	const currentPan = panzoom?.getPan();
 
-  if (!currentPan) return;
+	if (!currentPan) return;
 
-  panzoom?.zoomWithWheel(event);
+	panzoom?.zoomWithWheel(event);
 
-  renderPage();
+	renderPage();
 }
 
 function changePage(page: number) {
-  currentChartPage.value = page;
-  renderPage();
+	currentChartPage.value = page;
+	renderPage();
 }
 
 function addRotation(rotation: number) {
-  state.rotation += rotation;
+	state.rotation += rotation;
 
-  renderPage();
+	renderPage();
 }
 
 function handleKeyDown(event: KeyboardEvent) {
-  switch (event.code) {
-    case "ControlLeft":
-      state.keys.control = true;
-      break;
-    case "KeyR":
-      if (!event.repeat) {
-        addRotation(-90);
-      }
-      break;
-  }
+	switch (event.code) {
+		case "ControlLeft":
+			state.keys.control = true;
+			break;
+		case "KeyR":
+			if (!event.repeat) {
+				addRotation(-90);
+			}
+			break;
+	}
 }
 
 function handleKeyUp(event: KeyboardEvent) {
-  if (event.code === "ControlLeft") {
-    state.keys.control = false;
-  }
+	if (event.code === "ControlLeft") {
+		state.keys.control = false;
+	}
 }
 </script>
 
 <style scoped>
 .button {
-  @apply bg-zinc-900/90 border-zinc-700 outline-primary hover:bg-primary transition w-9 h-9 rounded-lg flex items-center justify-center backdrop-blur-sm;
+	@apply bg-zinc-900/90 border-zinc-700 outline-primary hover:bg-primary transition w-9 h-9 rounded-lg flex items-center justify-center backdrop-blur-sm;
 }
 
 .fallback-canvas {
-  transform-origin: center center;
-  /* transition: all 0.3s ease-in-out; */
+	transform-origin: center center;
+	/* transition: all 0.3s ease-in-out; */
 }
 </style>

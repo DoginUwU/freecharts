@@ -44,60 +44,60 @@
 </template>
 
 <script lang="ts" setup>
+import { storeToRefs } from "pinia";
 import { onBeforeMount, reactive, watch } from "vue";
-import { Airfield, Chart } from "../../types/airfield";
+import { useChartsStore } from "../../stores/chartsStore";
+import type { Airfield, Chart } from "../../types/airfield";
 import Input from "../Input.vue";
 import ChartList from "./ChartList.vue";
-import { storeToRefs } from "pinia";
-import { useChartsStore } from "../../stores/chartsStore";
 
 const chartsStore = useChartsStore();
 const { currentIcao } = storeToRefs(chartsStore);
 
 const emit = defineEmits<{
-  loadChart: [chart: Chart];
-  loadAirfield: [icao: string];
+	loadChart: [chart: Chart];
+	loadAirfield: [icao: string];
 }>();
 
 const props = defineProps<{
-  selectedChart: Chart | null;
-  airfield?: Airfield | null;
-  charts: Chart[];
+	selectedChart: Chart | null;
+	airfield?: Airfield | null;
+	charts: Chart[];
 }>();
 
 const state = reactive({
-  icao: currentIcao.value,
+	icao: currentIcao.value,
 });
 
 onBeforeMount(() => {
-  if (currentIcao.value) {
-    handleICAO();
-  }
+	if (currentIcao.value) {
+		handleICAO();
+	}
 });
 
 watch(
-  () => props.airfield?.icao,
-  () => {
-    state.icao = "";
-  },
+	() => props.airfield?.icao,
+	() => {
+		state.icao = "";
+	},
 );
 
 watch(
-  () => state.icao,
-  () => {
-    state.icao = state.icao.toUpperCase();
-  },
+	() => state.icao,
+	() => {
+		state.icao = state.icao.toUpperCase();
+	},
 );
 
 function handleKeyDownICAO(event: KeyboardEvent) {
-  if (event.code === "Enter" && state.icao.length === 4) {
-    handleICAO();
-  }
+	if (event.code === "Enter" && state.icao.length === 4) {
+		handleICAO();
+	}
 }
 
 function handleICAO() {
-  currentIcao.value = state.icao;
-  emit("loadAirfield", state.icao);
-  state.icao = "";
+	currentIcao.value = state.icao;
+	emit("loadAirfield", state.icao);
+	state.icao = "";
 }
 </script>

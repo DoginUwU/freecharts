@@ -19,25 +19,25 @@
 
 <script lang="ts" setup>
 export interface CheckboxItem {
-  label: string;
-  value: string;
-  color: string;
+	label: string;
+	value: string;
+	color: string;
 }
 
 const emit = defineEmits<{
-  select: [value: string];
+	select: [value: string];
 }>();
 
 const props = defineProps<{
-  items: CheckboxItem[];
-  selecteds: string[];
+	items: CheckboxItem[];
+	selecteds: string[];
 }>();
 
 function isSelected(item: CheckboxItem) {
-  return props.selecteds.includes(item.value);
+	return props.selecteds.includes(item.value);
 }
 
 function handleSelect(item: CheckboxItem) {
-  emit("select", item.value);
+	emit("select", item.value);
 }
 </script>

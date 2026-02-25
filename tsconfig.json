@@ -1,6 +1,6 @@
 {
-    "compilerOptions": {
-        "esModuleInterop": true,
-        "strict": true,
-    }
+	"compilerOptions": {
+		"esModuleInterop": true,
+		"strict": true
+	}
 }

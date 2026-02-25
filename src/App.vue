@@ -13,14 +13,14 @@ import { useChartsStore } from "./stores/chartsStore";
 const chartsStore = useChartsStore();
 
 onBeforeMount(async () => {
-  await handleConfigs();
+	await handleConfigs();
 });
 
 async function handleConfigs() {
-  const configChartsTheme = await window.api.readConfig("chartsTheme");
+	const configChartsTheme = await window.api.readConfig("chartsTheme");
 
-  if (configChartsTheme) {
-    chartsStore.chartsTheme = configChartsTheme;
-  }
+	if (configChartsTheme) {
+		chartsStore.chartsTheme = configChartsTheme;
+	}
 }
 </script>

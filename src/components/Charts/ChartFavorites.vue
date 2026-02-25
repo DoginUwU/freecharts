@@ -29,28 +29,28 @@
 </template>
 
 <script lang="ts" setup>
-import { storeToRefs } from "pinia";
-import { useChartsStore } from "../../stores/chartsStore";
-import { Airfield, Chart } from "../../types/airfield";
-import ChartList from "./ChartList.vue";
-import { computed } from "vue";
 import { groupBy } from "lodash-es";
+import { storeToRefs } from "pinia";
+import { computed } from "vue";
+import { useChartsStore } from "../../stores/chartsStore";
+import type { Airfield, Chart } from "../../types/airfield";
+import ChartList from "./ChartList.vue";
 
 const chartsStore = useChartsStore();
 const { favoritedCharts } = storeToRefs(chartsStore);
 
 const emit = defineEmits<{
-  loadChart: [chart: Chart];
+	loadChart: [chart: Chart];
 }>();
 
 defineProps<{
-  selectedChart: Chart | null;
-  airfield?: Airfield | null;
+	selectedChart: Chart | null;
+	airfield?: Airfield | null;
 }>();
 
 const groupedChartsByICAO = computed(() => {
-  const dictionary = groupBy(favoritedCharts.value, (chart) => chart.icao);
+	const dictionary = groupBy(favoritedCharts.value, (chart) => chart.icao);
 
-  return dictionary;
+	return dictionary;
 });
 </script>

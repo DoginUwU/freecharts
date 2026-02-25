@@ -2,17 +2,12 @@
   <aside class="px-2 h-full flex flex-col py-2">
     <nav class="flex-1">
       <ol class="flex flex-col gap-1">
-        <li
-          v-for="menu in MENUS"
-          :key="menu.name"
+        <li v-for="menu in MENUS" :key="menu.name"
           class="flex flex-col items-center justify-center aspect-square w-16 h-16 relative overflow-hidden rounded-xl p-2 transition select-none"
           :class="{
             'bg-gray-700 [&>*]:text-primary': menu.selected,
             'hover:bg-gray-800': !menu.selected,
-          }"
-          role="button"
-          @click="redirectMenu(menu)"
-        >
+          }" role="button" @click="redirectMenu(menu)">
           <TransitionGroup name="active-menu" appear>
             <i class="uil text-2xl" :class="menu.icon"></i>
             <span v-if="!menu.selected" class="text-xs text-center">{{
@@ -20,22 +15,19 @@
             }}</span>
           </TransitionGroup>
           <Transition name="active-menu-bar" appear>
-            <div
-              v-if="menu.selected"
-              class="absolute left-0 top-0 h-full w-1 bg-primary"
-            />
+            <div v-if="menu.selected" class="absolute left-0 top-0 h-full w-1 bg-primary" />
           </Transition>
         </li>
       </ol>
     </nav>
     <div class="mt-auto">
-      <button class="w-full flex items-center justify-center pb-2">
+      <!-- <button class="w-full flex items-center justify-center pb-2">
         <img
           class="w-10 h-10 aspect-square rounded-full"
           src="https://i.pinimg.com/736x/fa/5b/96/fa5b9671ba282904e574a7eccdc625aa.jpg"
           alt="profile"
         />
-      </button>
+      </button> -->
       <!-- <button
         class="flex flex-col items-center justify-center aspect-square w-auto h-16 relative overflow-hidden rounded-xl p-2 transition select-none hover:bg-gray-800 mb-2"
         @click="toggleMinimizeData"
@@ -51,48 +43,48 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 interface Menu {
-  name: string;
-  icon: string;
-  path: string;
-  selected?: boolean;
+	name: string;
+	icon: string;
+	path: string;
+	selected?: boolean;
 }
 
 const router = useRouter();
 
 const MENUS = computed(() => {
-  let menus: Menu[] = [
-    {
-      name: "Inicio",
-      icon: "uil-home",
-      path: "home",
-    },
-    {
-      name: "Plano",
-      icon: "uil-plane-fly",
-      path: "flight-plan",
-    },
-    {
-      name: "Cartas",
-      icon: "uil-location-arrow",
-      path: "charts",
-    },
-  ];
+	let menus: Menu[] = [
+		{
+			name: "Inicio",
+			icon: "uil-home",
+			path: "home",
+		},
+		{
+			name: "Plano",
+			icon: "uil-plane-fly",
+			path: "flight-plan",
+		},
+		{
+			name: "Cartas",
+			icon: "uil-location-arrow",
+			path: "charts",
+		},
+	];
 
-  menus = menus.map((menu) => {
-    if (router.currentRoute.value.name?.toString().includes(menu.path)) {
-      menu.selected = true;
-    } else {
-      menu.selected = false;
-    }
+	menus = menus.map((menu) => {
+		if (router.currentRoute.value.name?.toString().includes(menu.path)) {
+			menu.selected = true;
+		} else {
+			menu.selected = false;
+		}
 
-    return menu;
-  });
+		return menu;
+	});
 
-  return menus;
+	return menus;
 });
 
 function redirectMenu(menu: Menu) {
-  router.push({ name: menu.path });
+	router.push({ name: menu.path });
 }
 </script>
 
@@ -102,6 +94,7 @@ function redirectMenu(menu: Menu) {
 .active-menu-leave-active {
   transition: all 0.5s ease;
 }
+
 .active-menu-enter-from,
 .active-menu-leave-to {
   opacity: 0;
@@ -116,6 +109,7 @@ function redirectMenu(menu: Menu) {
 .active-menu-bar-leave-active {
   transition: all 0.3s ease;
 }
+
 .active-menu-bar-enter-from,
 .active-menu-bar-leave-to {
   transform: translateX(-30px);
