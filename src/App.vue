@@ -1,26 +1,22 @@
 <template>
-  <main class="flex h-screen">
-    <Sidebar />
-    <router-view class="flex-1" />
-  </main>
+	<main class="flex h-screen">
+		<Sidebar />
+		<Toaster theme="dark" position="bottom-right" />
+		<router-view class="flex-1" />
+	</main>
 </template>
 
 <script setup lang="ts">
 import { onBeforeMount } from "vue";
+import { Toaster } from "vue-sonner";
 import Sidebar from "./components/Sidebar.vue";
-import { useChartsStore } from "./stores/chartsStore";
+import { useSettingsStore } from "./stores/settingsStore";
+// @ts-expect-error - No types available for vue-sonner
+import "vue-sonner/style.css";
 
-const chartsStore = useChartsStore();
+const settingsStore = useSettingsStore();
 
 onBeforeMount(async () => {
-	await handleConfigs();
+	await settingsStore.loadSettings();
 });
-
-async function handleConfigs() {
-	const configChartsTheme = await window.api.readConfig("chartsTheme");
-
-	if (configChartsTheme) {
-		chartsStore.chartsTheme = configChartsTheme;
-	}
-}
 </script>

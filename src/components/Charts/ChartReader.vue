@@ -64,8 +64,10 @@ import Panzoom, { type PanzoomObject } from "@panzoom/panzoom";
 import * as pdfjs from "pdfjs-dist";
 import { storeToRefs } from "pinia";
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { bufferFromChart, createChartFileName } from "../../helpers/charts";
 import { airfieldService } from "../../services/AirfieldService";
 import { useChartsStore } from "../../stores/chartsStore";
+import { useSettingsStore } from "../../stores/settingsStore";
 import { useSidebarStore } from "../../stores/sidebarStore";
 import type { Airfield, Chart } from "../../types/airfield";
 import CollapseLeftSVG from "../Icons/CollapseLeftSVG.vue";
@@ -85,8 +87,10 @@ let panzoom = null as PanzoomObject | null;
 
 const sidebarStore = useSidebarStore();
 const chartsStore = useChartsStore();
+const settingsStore = useSettingsStore();
 const { minimizeData } = storeToRefs(sidebarStore);
-const { chartsTheme, currentChartPage } = storeToRefs(chartsStore);
+const { currentChartPage } = storeToRefs(chartsStore);
+const { currentSettings } = storeToRefs(settingsStore);
 
 const props = defineProps<{
 	airfield: Airfield;
@@ -107,20 +111,7 @@ const state = reactive({
 onMounted(async () => {
 	pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
-	const pdfFile = `${props.chart.id}.pdf`;
-
-	let buffer = await window.api.findCachedFile(pdfFile);
-
-	if (!buffer) {
-		buffer = await airfieldService.loadChart(props.chart.icao, props.chart.id);
-
-		if (!buffer) {
-			console.error("Failed to load chart PDF");
-			return;
-		}
-
-		await window.api.cacheFile(pdfFile, buffer);
-	}
+	const buffer = await bufferFromChart(props.chart);
 
 	pdf = await pdfjs.getDocument(buffer).promise;
 	state.loaded = true;
@@ -141,7 +132,7 @@ onBeforeUnmount(() => {
 });
 
 const invertColors = computed(() => {
-	return chartsTheme.value === "dark";
+	return currentSettings.value.chartsTheme === "dark";
 });
 
 async function renderPage() {

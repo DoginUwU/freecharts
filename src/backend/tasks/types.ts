@@ -2,32 +2,29 @@ import type { IpcMainInvokeEvent } from "electron";
 import type { Config } from "./ConfigTasks";
 
 export interface ImplementedCacheFileTasks {
-	cacheFile(
-		event: IpcMainInvokeEvent,
-		fileName: string,
-		buffer: Buffer<ArrayBufferLike>,
-	): Promise<void>;
+	cacheFile(event: IpcMainInvokeEvent, fileName: string, buffer: Buffer<ArrayBufferLike>): Promise<void>;
 
-	findCachedFile(
-		event: IpcMainInvokeEvent,
-		fileName: string,
-	): Promise<Buffer<ArrayBufferLike> | null>;
+	findCachedFile(event: IpcMainInvokeEvent, fileName: string): Promise<Buffer<ArrayBufferLike> | null>;
+	findCachedFilePath(event: IpcMainInvokeEvent, fileName: string): Promise<string | null>;
 }
 
 export interface ImplementedConfigTasks {
-	setConfig<T extends keyof Config>(
-		event: IpcMainInvokeEvent,
-		key: T,
-		value: Config[T],
-	): Promise<void>;
-	readConfig<T extends keyof Config>(
-		event: IpcMainInvokeEvent,
-		key: T,
-	): Promise<Config[T] | null>;
+	setConfig<T extends keyof Config>(event: IpcMainInvokeEvent, key: T, value: Config[T]): Promise<void>;
+	readConfig<T extends keyof Config>(event: IpcMainInvokeEvent, key: T): Promise<Config[T] | null>;
+	readAllConfig(): Promise<Config>;
+}
+
+export interface ImplementedDirectoryTasks {
+	selectDirectory(event: IpcMainInvokeEvent, defaultPath?: string): Promise<string | null>;
+	deleteDirectoryContents(event: IpcMainInvokeEvent, directoryPath: string): Promise<boolean>;
+	copyDirectoryContents(event: IpcMainInvokeEvent, sourcePath: string, destinationPath: string): Promise<boolean>;
+	copyFile(event: IpcMainInvokeEvent, sourcePath: string, destinationPath: string): Promise<boolean>;
+	listDirectoryContents(event: IpcMainInvokeEvent, directoryPath: string): Promise<string[] | null>;
 }
 
 export type ImplementedTasks = ImplementedCacheFileTasks &
-	ImplementedConfigTasks;
+	ImplementedConfigTasks &
+	ImplementedDirectoryTasks;
 
 export interface BackendTaskReturn<T> {
 	onSuccess: () => T;

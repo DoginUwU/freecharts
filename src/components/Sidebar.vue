@@ -9,8 +9,8 @@
             'hover:bg-gray-800': !menu.selected,
           }" role="button" @click="redirectMenu(menu)">
           <TransitionGroup name="active-menu" appear>
-            <i class="uil text-2xl" :class="menu.icon"></i>
-            <span v-if="!menu.selected" class="text-xs text-center">{{
+            <component :is="menu.icon" class="text-2xl w-6 h-6" color="#6d5adb" />
+            <span v-if="!menu.selected" class="text-xs text-center mt-1">{{
               menu.name
             }}</span>
           </TransitionGroup>
@@ -21,6 +21,13 @@
       </ol>
     </nav>
     <div class="mt-auto">
+      <button
+        class="w-full flex items-center justify-center hover:bg-zinc-900 rounded-xl !p-1 transition select-none aspect-square"
+        :class="{
+          'bg-primary/40': router.currentRoute.value.name === 'settings',
+        }" @click="redirectToSettings">
+        <PhGear class="text-2xl w-6 h-6" />
+      </button>
       <!-- <button class="w-full flex items-center justify-center pb-2">
         <img
           class="w-10 h-10 aspect-square rounded-full"
@@ -39,52 +46,57 @@
 </template>
 
 <script lang="ts" setup>
+import { PhAirplaneTilt, PhGear, PhHouse, PhNavigationArrow } from "@phosphor-icons/vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 interface Menu {
-	name: string;
-	icon: string;
-	path: string;
-	selected?: boolean;
+  name: string;
+  icon: unknown;
+  path: string;
+  selected?: boolean;
 }
 
 const router = useRouter();
 
 const MENUS = computed(() => {
-	let menus: Menu[] = [
-		{
-			name: "Inicio",
-			icon: "uil-home",
-			path: "home",
-		},
-		{
-			name: "Plano",
-			icon: "uil-plane-fly",
-			path: "flight-plan",
-		},
-		{
-			name: "Cartas",
-			icon: "uil-location-arrow",
-			path: "charts",
-		},
-	];
+  let menus: Menu[] = [
+    {
+      name: "Inicio",
+      icon: PhHouse,
+      path: "home",
+    },
+    {
+      name: "Plano",
+      icon: PhAirplaneTilt,
+      path: "flight-plan",
+    },
+    {
+      name: "Cartas",
+      icon: PhNavigationArrow,
+      path: "charts",
+    },
+  ];
 
-	menus = menus.map((menu) => {
-		if (router.currentRoute.value.name?.toString().includes(menu.path)) {
-			menu.selected = true;
-		} else {
-			menu.selected = false;
-		}
+  menus = menus.map((menu) => {
+    if (router.currentRoute.value.name?.toString().includes(menu.path)) {
+      menu.selected = true;
+    } else {
+      menu.selected = false;
+    }
 
-		return menu;
-	});
+    return menu;
+  });
 
-	return menus;
+  return menus;
 });
 
 function redirectMenu(menu: Menu) {
-	router.push({ name: menu.path });
+  router.push({ name: menu.path });
+}
+
+function redirectToSettings() {
+  router.push({ name: "settings" });
 }
 </script>
 

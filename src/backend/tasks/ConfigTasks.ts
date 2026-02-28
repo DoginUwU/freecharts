@@ -7,10 +7,29 @@ const schema = {
 		type: "string",
 		enum: ["light", "dark"],
 	},
+	filesAndDirectories: {
+		type: "object",
+		properties: {
+			simbriefPath: {
+				type: "string",
+			},
+			chartsPath: {
+				type: "string",
+			},
+			autoDelete: {
+				type: "boolean",
+			},
+		},
+	}
 };
 
 export interface Config {
 	chartsTheme: "light" | "dark";
+	filesAndDirectories: {
+		simbriefPath: string;
+		chartsPath: string;
+		autoDelete: boolean;
+	};
 }
 
 export class ConfigTasks implements ImplementedConfigTasks {
@@ -18,14 +37,11 @@ export class ConfigTasks implements ImplementedConfigTasks {
 		schema,
 	});
 
-	constructor() {}
-
 	async setConfig<T extends keyof Config>(
 		event: IpcMainInvokeEvent,
 		key: T,
 		value: Config[T],
 	): Promise<void> {
-		// @ts-expect-error wrong electron-store typo??
 		ConfigTasks.store.set(key, value);
 	}
 
@@ -33,7 +49,10 @@ export class ConfigTasks implements ImplementedConfigTasks {
 		event: IpcMainInvokeEvent,
 		key: T,
 	): Promise<Config[T] | null> {
-		// @ts-expect-error wrong electron-store typo??
 		return ConfigTasks.store.get(key) ?? null;
+	}
+
+	async readAllConfig(): Promise<Config> {
+		return ConfigTasks.store.store;
 	}
 }

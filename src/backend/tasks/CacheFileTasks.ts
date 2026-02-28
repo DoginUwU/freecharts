@@ -40,6 +40,25 @@ export class CacheFileTasks implements ImplementedCacheFileTasks {
 		}
 	}
 
+	async findCachedFilePath(
+		event: IpcMainInvokeEvent,
+		fileName: string,
+	): Promise<string | null> {
+		const filePath = path.join(CacheFileTasks.cacheFolder, fileName);
+
+		await CacheFileTasks.creteCacheFolderIfNeed();
+
+		try {
+			await fs.access(filePath, fs.constants.R_OK);
+
+			console.log(`[CACHE] Found file in: ${filePath}`);
+
+			return filePath;
+		} catch {
+			return null;
+		}
+	}
+
 	private static async creteCacheFolderIfNeed() {
 		try {
 			await fs.access(

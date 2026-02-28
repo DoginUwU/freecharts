@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { Chart } from "../types/airfield";
+import { useSettingsStore } from "./settingsStore";
 
 export const useChartsStore = defineStore("charts", {
 	state: () => ({
@@ -7,7 +8,6 @@ export const useChartsStore = defineStore("charts", {
 		currentChart: null as Chart | null,
 		currentChartPage: 1,
 		favoritedCharts: [] as Chart[],
-		chartsTheme: "light" as "light" | "dark",
 	}),
 	actions: {
 		favoriteChart(chart: Chart) {
@@ -34,13 +34,13 @@ export const useChartsStore = defineStore("charts", {
 		},
 
 		toggleChartsTheme() {
-			if (this.chartsTheme === "light") {
-				this.chartsTheme = "dark";
+			const settingsStore = useSettingsStore();
+			
+			if (settingsStore.currentSettings.chartsTheme === "light") {
+				settingsStore.setSetting("chartsTheme", "dark");
 			} else {
-				this.chartsTheme = "light";
+				settingsStore.setSetting("chartsTheme", "light");
 			}
-
-			window.api.setConfig("chartsTheme", this.chartsTheme);
 		},
 	},
 });
