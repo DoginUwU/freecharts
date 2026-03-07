@@ -18,5 +18,9 @@ const settingsStore = useSettingsStore();
 
 onBeforeMount(async () => {
 	await settingsStore.loadSettings();
+
+	// db.select().from(waypointsTable).then((waypoints) => {
+	// 	console.log("Waypoints:", waypoints);
+	// });
 });
 </script>

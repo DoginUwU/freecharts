@@ -1,7 +1,7 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { contextBridge, type IpcRenderer, ipcRenderer } from "electron";
+import { contextBridge, type IpcRenderer, ipcRenderer, shell } from "electron";
 import type {
 	BackendTask,
 	BackendTaskParameters,
@@ -31,6 +31,8 @@ contextBridge.exposeInMainWorld("api", {
 	copyDirectoryContents: defineBackendTask(ipcRenderer, "copyDirectoryContents"),
 	copyFile: defineBackendTask(ipcRenderer, "copyFile"),
 	listDirectoryContents: defineBackendTask(ipcRenderer, "listDirectoryContents"),
+
+	openExternal: (url: string) => shell.openExternal(url),
 });
 
 declare global {
@@ -49,6 +51,8 @@ declare global {
 			copyDirectoryContents: BackendTask<"copyDirectoryContents">;
 			copyFile: BackendTask<"copyFile">;
 			listDirectoryContents: BackendTask<"listDirectoryContents">;
+
+			openExternal: (url: string) => void;
 		};
 	}
 }

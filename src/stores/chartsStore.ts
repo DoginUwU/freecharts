@@ -7,6 +7,7 @@ export const useChartsStore = defineStore("charts", {
 		currentIcao: "",
 		currentChart: null as Chart | null,
 		currentChartPage: 1,
+		currentChartTab: "charts" as string,
 		favoritedCharts: [] as Chart[],
 	}),
 	actions: {

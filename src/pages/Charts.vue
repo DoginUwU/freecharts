@@ -1,24 +1,24 @@
 <template>
-  <div class="flex h-vh overflow-hidden pt-4">
-    <Transition name="airfield-anim" appear>
-      <aside v-show="!minimizeData"
-        class="flex flex-col items-center text-center gap-2 min-w-80 w-80 overflow-y-auto pr-2 mb-2">
-        <CheckboxGroup :items="CHARTS_MENU" :selecteds="[state.currentTab]" @select="state.currentTab = $event" />
-        <ChartAirfieldData v-show="state.currentTab === 'charts'" :airfield="currentAirfield" :charts="charts ?? []"
-          :selected-chart="currentChart" @load-chart="loadChart" />
-        <ChartFavorites v-show="state.currentTab === 'favorites'" :airfield="currentAirfield"
-          :selected-chart="currentChart" @load-chart="loadChart" />
-      </aside>
-    </Transition>
-    <ChartReader v-if="currentAirfield && currentChart" :key="currentChart.id" :airfield="currentAirfield"
-      :chart="currentChart" />
-    <div v-else class="w-full h-full flex items-center justify-center flex-col">
-      <h3 class="font-semibold text-xl">Aguardando instruções, comandante</h3>
-      <span class="opacity-85">
-        Escolha alguma carta aeronáutica, ela será exibida aqui!
-      </span>
-    </div>
-  </div>
+	<div class="flex h-vh overflow-hidden pt-4">
+		<Transition name="airfield-anim" appear>
+			<aside v-show="!minimizeData"
+				class="flex flex-col items-center text-center gap-2 min-w-80 w-80 overflow-y-auto pr-2 mb-2">
+				<CheckboxGroup :items="CHARTS_MENU" :selecteds="[currentChartTab]" @select="currentChartTab = $event" />
+				<ChartAirfieldData v-show="currentChartTab === 'charts'" :airfield="currentAirfield"
+					:charts="charts ?? []" :selected-chart="currentChart" @load-chart="loadChart" />
+				<ChartFavorites v-show="currentChartTab === 'favorites'" :airfield="currentAirfield"
+					:selected-chart="currentChart" @load-chart="loadChart" />
+			</aside>
+		</Transition>
+		<ChartReader v-if="currentAirfield && currentChart" :key="currentChart.id" :airfield="currentAirfield"
+			:chart="currentChart" />
+		<div v-else class="w-full h-full flex items-center justify-center flex-col">
+			<h3 class="font-semibold text-xl">Aguardando instruções, comandante</h3>
+			<span class="opacity-85">
+				Escolha alguma carta aeronáutica, ela será exibida aqui!
+			</span>
+		</div>
+	</div>
 </template>
 
 <script lang="ts" setup>
@@ -53,7 +53,7 @@ const sidebarStore = useSidebarStore();
 const { minimizeData } = storeToRefs(sidebarStore);
 
 const chartsStore = useChartsStore();
-const { currentIcao, currentChart, currentChartPage } =
+const { currentIcao, currentChart, currentChartPage, currentChartTab } =
 	storeToRefs(chartsStore);
 
 const { data: currentAirfield } = useQuery({
@@ -72,10 +72,6 @@ const { data: charts } = useQuery({
 		return airfieldService.findChartsByICAO(currentIcao.value);
 	},
 	staleTime: Infinity,
-});
-
-const state = reactive({
-	currentTab: CHARTS_MENU[0].value,
 });
 
 onMounted(() => {
@@ -99,21 +95,21 @@ async function loadChart(chart: Chart) {
 
 <style scoped>
 .airfield-anim-leave-active {
-  transition: width 0.3s;
+	transition: width 0.3s;
 }
 
 .airfield-anim-enter-active {
-  transition:
-    width 0.3s,
-    min-width 0.3s,
-    opacity 0.7s;
+	transition:
+		width 0.3s,
+		min-width 0.3s,
+		opacity 0.7s;
 }
 
 .airfield-anim-enter-from,
 .airfield-anim-leave-to {
-  opacity: 0;
-  width: 0;
-  min-width: 0;
-  overflow: hidden;
+	opacity: 0;
+	width: 0;
+	min-width: 0;
+	overflow: hidden;
 }
 </style>
