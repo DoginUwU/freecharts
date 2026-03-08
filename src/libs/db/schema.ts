@@ -36,13 +36,31 @@ export const runwaysTable = sqliteTable("runways", {
 	(table) => [index("airport_icao_idx").on(table.airportIcao)]
 );
 
+export const gatesTable = sqliteTable("gates", {
+	id: int().primaryKey({ autoIncrement: true }),
+	name: text(),
+	airportIcao: text().references(() => airportsTable.icao),
+	lat: real(),
+	lon: real(),
+},
+	(table) => [index("gate_airport_icao_idx").on(table.airportIcao)]
+);
+
 export const airportsRelations = relations(airportsTable, ({ many }) => ({
 	runways: many(runwaysTable),
+	gates: many(gatesTable),
 }));
 
 export const runwaysRelations = relations(runwaysTable, ({ one }) => ({
 	airport: one(airportsTable, {
 		fields: [runwaysTable.airportIcao],
+		references: [airportsTable.icao],
+	}),
+}));
+
+export const gatesRelations = relations(gatesTable, ({ one }) => ({
+	airport: one(airportsTable, {
+		fields: [gatesTable.airportIcao],
 		references: [airportsTable.icao],
 	}),
 }));
