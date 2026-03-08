@@ -1,14 +1,7 @@
-import path from "node:path";
+import { electronApp, is } from "@electron-toolkit/utils";
 import { app, BrowserWindow, ipcMain, screen } from "electron";
-import started from "electron-squirrel-startup";
-import { BackendTasks } from "./backend/tasks";
-
-declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
-declare const MAIN_WINDOW_VITE_NAME: string;
-
-if (started) {
-	app.quit();
-}
+import { join } from "path";
+import { BackendTasks } from "../backend/tasks";
 
 const createWindow = () => {
 	const primaryDisplay = screen.getPrimaryDisplay();
@@ -19,7 +12,8 @@ const createWindow = () => {
 		width: Math.round(width * 0.9),
 		height: Math.round(height * 0.9),
 		webPreferences: {
-			preload: path.join(__dirname, "preload.js"),
+			preload: join(__dirname, "../preload/index.js"),
+			sandbox: false,
 		},
 		// backgroundMaterial: "mica",
 		autoHideMenuBar: true,
@@ -30,12 +24,10 @@ const createWindow = () => {
 		// frame: false
 	});
 
-	if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-		mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+	if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
+		mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
 	} else {
-		mainWindow.loadFile(
-			path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
-		);
+		mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
 	}
 
 	mainWindow.webContents.once("dom-ready", () => {
@@ -44,6 +36,8 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
+	electronApp.setAppUserModelId("com.freecharts.app");
+
 	createWindow();
 
 	app.on("activate", () => {

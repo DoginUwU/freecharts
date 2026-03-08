@@ -1,23 +1,12 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
-
+import { electronAPI } from "@electron-toolkit/preload";
 import { contextBridge, type IpcRenderer, ipcRenderer, shell } from "electron";
 import type {
 	BackendTask,
 	BackendTaskParameters,
 	ImplementedTasks,
-} from "./backend/tasks/types";
+} from "../backend/tasks/types";
 
-export function defineBackendTask<T extends keyof ImplementedTasks>(
-	ipcRenderer: IpcRenderer,
-	task: T,
-) {
-	return (...args: BackendTaskParameters<T>) => {
-		return ipcRenderer.invoke(task, ...args);
-	};
-}
-
-contextBridge.exposeInMainWorld("api", {
+const api = {
 	cacheFile: defineBackendTask(ipcRenderer, "cacheFile"),
 	findCachedFile: defineBackendTask(ipcRenderer, "findCachedFile"),
 	findCachedFilePath: defineBackendTask(ipcRenderer, "findCachedFilePath"),
@@ -27,16 +16,47 @@ contextBridge.exposeInMainWorld("api", {
 	readAllConfig: defineBackendTask(ipcRenderer, "readAllConfig"),
 
 	selectDirectory: defineBackendTask(ipcRenderer, "selectDirectory"),
-	deleteDirectoryContents: defineBackendTask(ipcRenderer, "deleteDirectoryContents"),
-	copyDirectoryContents: defineBackendTask(ipcRenderer, "copyDirectoryContents"),
+	deleteDirectoryContents: defineBackendTask(
+		ipcRenderer,
+		"deleteDirectoryContents",
+	),
+	copyDirectoryContents: defineBackendTask(
+		ipcRenderer,
+		"copyDirectoryContents",
+	),
 	copyFile: defineBackendTask(ipcRenderer, "copyFile"),
-	listDirectoryContents: defineBackendTask(ipcRenderer, "listDirectoryContents"),
+	listDirectoryContents: defineBackendTask(
+		ipcRenderer,
+		"listDirectoryContents",
+	),
 
 	getAirportsInBounds: defineBackendTask(ipcRenderer, "getAirportsInBounds"),
 	getGatesInBounds: defineBackendTask(ipcRenderer, "getGatesInBounds"),
 
 	openExternal: (url: string) => shell.openExternal(url),
-});
+};
+
+if (process.contextIsolated) {
+	try {
+		contextBridge.exposeInMainWorld("electron", electronAPI);
+		contextBridge.exposeInMainWorld("api", api);
+	} catch (error) {
+		console.error(error);
+	}
+} else {
+	// @ts-expect-error (define in dts)
+	window.electron = electronAPI;
+	window.api = api;
+}
+
+export function defineBackendTask<T extends keyof ImplementedTasks>(
+	ipcRenderer: IpcRenderer,
+	task: T,
+) {
+	return (...args: BackendTaskParameters<T>) => {
+		return ipcRenderer.invoke(task, ...args);
+	};
+}
 
 declare global {
 	interface Window {

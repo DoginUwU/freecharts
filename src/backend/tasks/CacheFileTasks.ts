@@ -79,12 +79,25 @@ export class CacheFileTasks implements ImplementedCacheFileTasks {
 			throw new Error("Missing freecharts temp directory");
 		}
 
-		const files = await fs.readdir(CacheFileTasks.cacheFolder);
-
-		for (const file of files) {
-			await fs.unlink(path.join(CacheFileTasks.cacheFolder, file));
+		if (
+			!fs
+				.stat(CacheFileTasks.cacheFolder)
+				.then((stat) => stat.isDirectory())
+				.catch(() => false)
+		) {
+			return;
 		}
 
-		console.log(`[CACHE] Temp data cleaned`);
+		try {
+			const files = await fs.readdir(CacheFileTasks.cacheFolder);
+
+			for (const file of files) {
+				await fs.unlink(path.join(CacheFileTasks.cacheFolder, file));
+			}
+
+			console.log(`[CACHE] Temp data cleaned`);
+		} catch (error) {
+			console.error(`[CACHE] Failed to clean temp data: ${error}`);
+		}
 	}
 }

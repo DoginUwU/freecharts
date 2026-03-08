@@ -27,3 +27,7 @@ body,
 	background: transparent;
 	border-radius: 10px;
 }
+
+.maplibregl-popup-content {
+	@apply !bg-transparent !p-0 !border-0;
+}

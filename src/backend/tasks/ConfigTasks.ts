@@ -1,5 +1,5 @@
 import type { IpcMainInvokeEvent } from "electron";
-import ElectronStore from "electron-store";
+// import ElectronStore from "electron-store";
 import type { ImplementedConfigTasks } from "./types";
 
 const schema = {
@@ -33,26 +33,28 @@ export interface Config {
 }
 
 export class ConfigTasks implements ImplementedConfigTasks {
-	private static store = new ElectronStore<Config>({
-		schema,
-	});
+	// private static store = new ElectronStore<Config>({
+	// 	schema,
+	// });
 
 	async setConfig<T extends keyof Config>(
 		event: IpcMainInvokeEvent,
 		key: T,
 		value: Config[T],
 	): Promise<void> {
-		ConfigTasks.store.set(key, value);
+		// ConfigTasks.store.set(key, value);
 	}
 
 	async readConfig<T extends keyof Config>(
 		event: IpcMainInvokeEvent,
 		key: T,
 	): Promise<Config[T] | null> {
-		return ConfigTasks.store.get(key) ?? null;
+		return null;
+		// return ConfigTasks.store.get(key) ?? null;
 	}
 
 	async readAllConfig(): Promise<Config> {
-		return ConfigTasks.store.store;
+		return {} as Config;
+		// return ConfigTasks.store.store;
 	}
 }
