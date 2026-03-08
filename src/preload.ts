@@ -32,6 +32,9 @@ contextBridge.exposeInMainWorld("api", {
 	copyFile: defineBackendTask(ipcRenderer, "copyFile"),
 	listDirectoryContents: defineBackendTask(ipcRenderer, "listDirectoryContents"),
 
+	getAirportsInBounds: defineBackendTask(ipcRenderer, "getAirportsInBounds"),
+	getGatesInBounds: defineBackendTask(ipcRenderer, "getGatesInBounds"),
+
 	openExternal: (url: string) => shell.openExternal(url),
 });
 
@@ -53,6 +56,9 @@ declare global {
 			listDirectoryContents: BackendTask<"listDirectoryContents">;
 
 			openExternal: (url: string) => void;
+
+			getAirportsInBounds: BackendTask<"getAirportsInBounds">;
+			getGatesInBounds: BackendTask<"getGatesInBounds">;
 		};
 	}
 }

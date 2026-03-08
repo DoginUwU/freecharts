@@ -15,6 +15,13 @@
       "when": 1772969874630,
       "tag": "0001_salty_drax",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772970540176,
+      "tag": "0002_dark_thor",
+      "breakpoints": true
     }
   ]
 }

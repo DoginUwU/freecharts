@@ -1,8 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { app, dialog, type IpcMainInvokeEvent } from "electron";
+import type { ImplementedDirectoryTasks } from "./types";
 
-export class DirectoryTasks {
+export class DirectoryTasks implements ImplementedDirectoryTasks {
 	async selectDirectory(
 		event: IpcMainInvokeEvent,
 		defaultPath?: string,
@@ -30,7 +31,10 @@ export class DirectoryTasks {
 			const files = await fs.readdir(directoryPath);
 			return files;
 		} catch (error) {
-			console.error(`Erro ao listar o conteúdo do diretório ${directoryPath}:`, error);
+			console.error(
+				`Erro ao listar o conteúdo do diretório ${directoryPath}:`,
+				error,
+			);
 			return null;
 		}
 	}
@@ -85,50 +89,74 @@ export class DirectoryTasks {
 
 	private async assertDirectoryProtections(directoryPath: string) {
 		if (directoryPath === "/") {
-			throw new Error("Operação proibida: não é permitido acessar a raiz do sistema.");
+			throw new Error(
+				"Operação proibida: não é permitido acessar a raiz do sistema.",
+			);
 		}
 
 		if (directoryPath === process.cwd()) {
-			throw new Error("Operação proibida: não é permitido acessar o diretório de trabalho do aplicativo.");
+			throw new Error(
+				"Operação proibida: não é permitido acessar o diretório de trabalho do aplicativo.",
+			);
 		}
 
 		if (directoryPath === path.dirname(process.execPath)) {
-			throw new Error("Operação proibida: não é permitido acessar o diretório de instalação do aplicativo.");
+			throw new Error(
+				"Operação proibida: não é permitido acessar o diretório de instalação do aplicativo.",
+			);
 		}
 
-		const SIMULATOR_DIR_NAMES = ["Microsoft Flight Simulator", "Prepar3D", "X-Plane 11", "X-Plane 12", "Steam"];
+		const SIMULATOR_DIR_NAMES = [
+			"Microsoft Flight Simulator",
+			"Prepar3D",
+			"X-Plane 11",
+			"X-Plane 12",
+			"Steam",
+		];
 
 		if (SIMULATOR_DIR_NAMES.every((name) => !directoryPath.includes(name))) {
-			throw new Error("Operação proibida: o diretório selecionado não parece ser relacionado a um simulador de voo.");
+			throw new Error(
+				"Operação proibida: o diretório selecionado não parece ser relacionado a um simulador de voo.",
+			);
 		}
 
 		const PROTECTED_PATHS = [
-			app.getPath('home'),
-			app.getPath('desktop'),
-			app.getPath('documents'),
-			app.getPath('downloads'),
-			app.getPath('music'),
-			app.getPath('pictures'),
-			app.getPath('videos'),
-			app.getPath('temp'),
-			app.getPath('userData'),
+			app.getPath("home"),
+			app.getPath("desktop"),
+			app.getPath("documents"),
+			app.getPath("downloads"),
+			app.getPath("music"),
+			app.getPath("pictures"),
+			app.getPath("videos"),
+			app.getPath("temp"),
+			app.getPath("userData"),
 		];
 
-		if (PROTECTED_PATHS.some((protectedPath) => directoryPath.endsWith(protectedPath))) {
-			throw new Error("Operação proibida: o diretório selecionado está em uma área protegida do sistema.");
+		if (
+			PROTECTED_PATHS.some((protectedPath) =>
+				directoryPath.endsWith(protectedPath),
+			)
+		) {
+			throw new Error(
+				"Operação proibida: o diretório selecionado está em uma área protegida do sistema.",
+			);
 		}
 
 		const files = await fs.readdir(directoryPath);
-		const hasNonFlightData = files.some(file => {
+		const hasNonFlightData = files.some((file) => {
 			const ext = path.extname(file).toLowerCase();
-			return [".exe", ".dll", ".sys", ".ini", ".lnk", ".AppImage"].includes(ext);
+			return [".exe", ".dll", ".sys", ".ini", ".lnk", ".AppImage"].includes(
+				ext,
+			);
 		});
 
 		if (hasNonFlightData) {
-			throw new Error("Segurança: Esta pasta contém arquivos de sistema ou executáveis. Selecione uma pasta destinada apenas a documentos de voo.");
+			throw new Error(
+				"Segurança: Esta pasta contém arquivos de sistema ou executáveis. Selecione uma pasta destinada apenas a documentos de voo.",
+			);
 		}
 
-		const hasFlightData = files.some(file => {
+		const hasFlightData = files.some((file) => {
 			const ext = path.extname(file).toLowerCase();
 			return [".pln", ".pdf", ".fltplan", ".fms", ".txt"].includes(ext);
 		});
@@ -136,7 +164,9 @@ export class DirectoryTasks {
 		const hasFiles = files.length > 0;
 
 		if (hasFiles && !hasFlightData) {
-			throw new Error("Segurança: Esta pasta não parece conter arquivos relacionados a simuladores de voo. Selecione uma pasta destinada a documentos de voo.");
+			throw new Error(
+				"Segurança: Esta pasta não parece conter arquivos relacionados a simuladores de voo. Selecione uma pasta destinada a documentos de voo.",
+			);
 		}
 	}
 }

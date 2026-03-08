@@ -5,32 +5,33 @@ export const waypointsTable = sqliteTable(
 	"waypoints",
 	{
 		id: int().primaryKey({ autoIncrement: true }),
-		ident: text(),
-		lat: real(),
-		lon: real(),
-		airport: text(),
-		region: text(),
+		ident: text().notNull(),
+		lat: real().notNull(),
+		lon: real().notNull(),
+		airport: text().notNull(),
+		region: text().notNull(),
 	},
 	(table) => [index("ident_idx").on(table.ident)],
 );
 
 export const airportsTable = sqliteTable("airports", {
 	id: int().primaryKey({ autoIncrement: true }),
-	icao: text().unique(),
-	name: text(),
-	elevation: int(),
-	lat: real(),
-	lon: real(),
+	icao: text().unique().notNull(),
+	name: text().default("").notNull(),
+	elevation: int().default(0).notNull(),
+	lat: real().notNull(),
+	lon: real().notNull(),
+	rank: int().default(0).notNull(),
 }, 
 	(table) => [index("icao_idx").on(table.icao)]
 );
 
 export const runwaysTable = sqliteTable("runways", {
 	id: int().primaryKey({ autoIncrement: true }),
-	widthMetres: real(),
-	lat: real(),
-	lon: real(),
-	number: text(),
+	widthMetres: real().notNull(),
+	lat: real().notNull(),
+	lon: real().notNull(),
+	number: text().notNull(),
 	airportIcao: text().references(() => airportsTable.icao),
 },
 	(table) => [index("airport_icao_idx").on(table.airportIcao)]
@@ -38,10 +39,10 @@ export const runwaysTable = sqliteTable("runways", {
 
 export const gatesTable = sqliteTable("gates", {
 	id: int().primaryKey({ autoIncrement: true }),
-	name: text(),
+	name: text().notNull(),
 	airportIcao: text().references(() => airportsTable.icao),
-	lat: real(),
-	lon: real(),
+	lat: real().notNull(),
+	lon: real().notNull(),
 },
 	(table) => [index("gate_airport_icao_idx").on(table.airportIcao)]
 );

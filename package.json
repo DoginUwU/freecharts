@@ -11,7 +11,9 @@
 		"publish": "electron-forge publish",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
-		"format": "biome format --write ."
+		"format": "biome format --write .",
+		"db:push": "yarn install better-sqlite3 && npx drizzle-kit push && yarn rebuild",
+		"rebuild": "electron-rebuild -f -w better-sqlite3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
@@ -24,6 +26,7 @@
 		"@electron-forge/plugin-fuses": "^7.6.0",
 		"@electron-forge/plugin-vite": "^7.6.0",
 		"@electron/fuses": "^1.8.0",
+		"@types/better-sqlite3": "^7.6.13",
 		"@types/electron-squirrel-startup": "^1.0.2",
 		"@types/leaflet": "^1.9.21",
 		"@types/lodash-es": "^4.17.12",
@@ -40,11 +43,11 @@
 	"author": "dogin",
 	"license": "MIT",
 	"dependencies": {
-		"@libsql/client": "^0.17.0",
 		"@panzoom/panzoom": "^4.6.0",
 		"@phosphor-icons/vue": "^2.2.1",
 		"@tanstack/vue-query": "^5.64.2",
 		"axios": "^1.7.9",
+		"better-sqlite3": "^12.6.2",
 		"dotenv": "^17.3.1",
 		"drizzle-orm": "^0.45.1",
 		"electron-squirrel-startup": "^1.0.1",
