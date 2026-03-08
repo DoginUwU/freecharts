@@ -23,6 +23,9 @@
 						"ignore": ["@tailwind"]
 					}
 				}
+			},
+			"style": {
+				"noNonNullAssertion": "off"
 			}
 		}
 	},

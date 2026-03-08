@@ -46,7 +46,7 @@
 </template>
 
 <script lang="ts" setup>
-import { PhAirplaneTilt, PhGear, PhHouse, PhNavigationArrow } from "@phosphor-icons/vue";
+import { PhAirplaneTilt, PhGear, PhHouse, PhMapPin, PhNavigationArrow } from "@phosphor-icons/vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 
@@ -75,6 +75,11 @@ const MENUS = computed(() => {
       name: "Cartas",
       icon: PhNavigationArrow,
       path: "charts",
+    },
+    {
+      name: "Mapa",
+      icon: PhMapPin,
+      path: "map",
     },
   ];
 
