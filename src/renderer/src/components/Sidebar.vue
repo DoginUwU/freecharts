@@ -72,14 +72,14 @@ const MENUS = computed(() => {
       path: "flight-plan",
     },
     {
-      name: "Cartas",
-      icon: PhNavigationArrow,
-      path: "charts",
-    },
-    {
       name: "Mapa",
       icon: PhMapPin,
       path: "map",
+    },
+    {
+      name: "Cartas",
+      icon: PhNavigationArrow,
+      path: "charts",
     },
   ];
 

@@ -1,9 +1,22 @@
 <template>
-    <div ref="mapElement"></div>
+    <div class="relative w-full h-full">
+        <div ref="mapElement" class="w-full h-full"></div>
+
+        <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
+            <button @click="toggleStyle"
+                class="bg-zinc-900/90 border-zinc-700 text-white p-3 rounded-xl border border-white/10 shadow-2xl backdrop-blur-md transition-all active:scale-95">
+                <PhMoonStars />
+            </button>
+        </div>
+
+        <RouteManager @fit-route="fitRoute" />
+    </div>
 </template>
 
 <script setup lang="ts">
+import { PhMoonStars } from "@phosphor-icons/vue";
 import type { Map as MapLibre } from "maplibre-gl";
+import { storeToRefs } from "pinia";
 import {
     h,
     markRaw,
@@ -13,11 +26,48 @@ import {
     reactive,
     ref,
     render,
+    watch,
 } from "vue";
+import { geoService } from "../services/GeoService";
+import { useRouteStore } from "../stores/routeStore";
 import AirportMapPopup from "./Map/AirportMapPopup.vue";
+import RouteManager from "./Map/RouteManager.vue";
 
+const loadedLayouts = new Set<string>();
 const mapElement = ref<HTMLDivElement>();
 let map: MapLibre | null = null;
+
+const routeStore = useRouteStore();
+const { currentWaypoints } = storeToRefs(routeStore);
+
+const currentStyle = ref<"dark" | "satellite">("dark");
+
+const styles = {
+    dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+    satellite: {
+        version: 8,
+        sources: {
+            "raster-tiles": {
+                type: "raster",
+                tiles: [
+                    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                ],
+                tileSize: 256,
+                attribution:
+                    "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+            },
+        },
+        layers: [
+            {
+                id: "simple-tiles",
+                type: "raster",
+                source: "raster-tiles",
+                minzoom: 0,
+                maxzoom: 22,
+            },
+        ],
+    },
+};
 
 onMounted(async () => {
     await nextTick();
@@ -31,7 +81,7 @@ onMounted(async () => {
         new window.maplibregl.Map({
             container: mapElement.value,
             style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-            center: [-122.420679, 37.772537],
+            center: [-43.1629, -22.9101],
             zoom: 9,
         }),
     );
@@ -39,6 +89,18 @@ onMounted(async () => {
     map.on("load", () => {
         setupLayers();
         updateAirports();
+        updateGates();
+        updateCurrentRoute();
+    });
+
+    map.on("style.load", () => {
+        setupLayers();
+
+        loadedLayouts.clear();
+
+        updateAirports();
+        updateGates();
+        updateCurrentRoute();
     });
 
     map.on("moveend", () => {
@@ -60,7 +122,7 @@ onMounted(async () => {
         if (!e.features?.[0]) return;
         const props = e.features[0].properties;
 
-        const container = document.createElement('div');
+        const container = document.createElement("div");
 
         const vnode = h(AirportMapPopup, {
             icao: props?.icao,
@@ -86,84 +148,270 @@ onUnmounted(() => {
     }
 });
 
+watch(currentWaypoints, () => {
+    updateCurrentRoute();
+});
+
+function toggleStyle() {
+    if (!map) return;
+    currentStyle.value = currentStyle.value === "dark" ? "satellite" : "dark";
+
+    map.setStyle(styles[currentStyle.value] as any);
+}
+
 function setupLayers() {
     if (!map) return;
 
-    map.addSource("airports", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-    });
+    if (!map.getSource("airport-details")) {
+        map.addSource("airport-details", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] },
+        });
 
-    map.addLayer({
-        id: "airports-circle",
-        type: "circle",
-        source: "airports",
-        paint: {
-            "circle-radius": 5,
-            "circle-color": "#6d5adb",
-            "circle-stroke-color": "#fff",
-            "circle-stroke-width": 1,
-        },
-    });
+        map.addLayer({
+            id: "osm-apron",
+            type: "fill",
+            source: "airport-details",
+            filter: ["==", ["get", "aeroway"], "apron"],
+            paint: {
+                "fill-color": "#383838",
+                "fill-opacity": 0.85,
+            },
+        });
 
-    map.addLayer({
-        id: "airports-label",
-        type: "symbol",
-        source: "airports",
-        layout: {
-            "text-field": ["get", "icao"],
-            "text-font": ["Open Sans Regular"],
-            "text-size": 12,
-            "text-offset": [0, 1.5],
-            "text-anchor": "top",
-            "text-allow-overlap": false,
-        },
-        paint: {
-            "text-color": "#ffffff",
-            "text-halo-color": "#000",
-            "text-halo-width": 1,
-        },
-    });
+        map.addLayer({
+            id: "osm-taxiway-surface",
+            type: "line",
+            source: "airport-details",
+            filter: ["==", ["get", "aeroway"], "taxiway"],
+            paint: {
+                "line-color": "#4a4640",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    13,
+                    3,
+                    16,
+                    45,
+                    20,
+                    55,
+                ],
+                "line-opacity": 0.9,
+            },
+        });
 
-    map.addSource("gates", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-    });
+        map.addLayer({
+            id: "osm-taxiway-line",
+            type: "line",
+            source: "airport-details",
+            filter: ["==", ["get", "aeroway"], "taxiway"],
+            paint: {
+                "line-color": "#d4a843",
+                "line-width": ["interpolate", ["linear"], ["zoom"], 12, 1, 16, 2],
+            },
+        });
 
-    map.addLayer({
-        id: "gates-circle",
-        type: "circle",
-        source: "gates",
-        minzoom: 14,
-        paint: {
-            "circle-radius": 4,
-            "circle-color": "#2563eb",
-            "circle-stroke-color": "#fff",
-            "circle-stroke-width": 1,
-        },
-    });
+        map.addLayer({
+            id: "osm-runway-surface",
+            type: "line",
+            source: "airport-details",
+            filter: ["==", ["get", "aeroway"], "runway"],
+            paint: {
+                "line-color": "#2a2a2a",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    1,
+                    12,
+                    3,
+                    14,
+                    12,
+                    16,
+                    45,
+                    18,
+                    65,
+                ],
+            },
+        });
 
-    map.addLayer({
-        id: "gates-label",
-        type: "symbol",
-        source: "gates",
-        minzoom: 15,
-        layout: {
-            "text-field": ["get", "name"],
-            "text-size": 10,
-            "text-offset": [0, 1.2],
-            "text-anchor": "top",
-        },
-        paint: {
-            "text-color": "#60a5fa",
-        },
-    });
+        map.addLayer({
+            id: "osm-runway-line",
+            type: "line",
+            source: "airport-details",
+            filter: ["==", ["get", "aeroway"], "runway"],
+            paint: {
+                "line-color": "#e0e0e0",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    12,
+                    1,
+                    14,
+                    1.5,
+                    16,
+                    2,
+                ],
+                "line-dasharray": [3, 5],
+                "line-opacity": 0.7,
+            },
+        });
+    }
+
+    if (!map.getSource("airports")) {
+        map.addSource("airports", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] },
+        });
+
+        map.addLayer({
+            id: "airports-circle",
+            type: "circle",
+            source: "airports",
+            maxzoom: 14,
+            paint: {
+                "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 5, 12, 7],
+                "circle-color": "#818cf8",
+                "circle-stroke-color": "#c7d2fe",
+                "circle-stroke-width": 1.5,
+                "circle-opacity": 0.9,
+            },
+        });
+
+        map.addLayer({
+            id: "airports-label",
+            type: "symbol",
+            source: "airports",
+            maxzoom: 14,
+            layout: {
+                "text-field": ["get", "icao"],
+                "text-font": ["Open Sans Regular"],
+                "text-size": ["interpolate", ["linear"], ["zoom"], 8, 11, 12, 13],
+                "text-offset": [0, 1.5],
+                "text-anchor": "top",
+                "text-allow-overlap": false,
+            },
+            paint: {
+                "text-color": "#e0e7ff",
+                "text-halo-color": "#1e1b4b",
+                "text-halo-width": 1.5,
+            },
+        });
+    }
+
+    if (!map.getSource("gates")) {
+        map.addSource("gates", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] },
+        });
+
+        map.addLayer({
+            id: "gates-circle",
+            type: "circle",
+            source: "gates",
+            minzoom: 14,
+            paint: {
+                "circle-radius": ["interpolate", ["linear"], ["zoom"], 14, 4, 18, 6],
+                "circle-color": "#3b82f6",
+                "circle-stroke-color": "#93c5fd",
+                "circle-stroke-width": 1,
+            },
+        });
+
+        map.addLayer({
+            id: "gates-label",
+            type: "symbol",
+            source: "gates",
+            minzoom: 15,
+            layout: {
+                "text-field": ["get", "name"],
+                "text-size": 11,
+                "text-offset": [0, 1.2],
+                "text-anchor": "top",
+            },
+            paint: {
+                "text-color": "#93c5fd",
+                "text-halo-color": "#1e3a5f",
+                "text-halo-width": 1.5,
+            },
+        });
+    }
+
+    if (!map.getSource("flight-plan")) {
+        map.addSource("flight-plan", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] },
+        });
+
+        map.addLayer({
+            id: "route-line-glow",
+            type: "line",
+            source: "flight-plan",
+            filter: ["==", ["geometry-type"], "LineString"],
+            paint: {
+                "line-color": "#00d4ff",
+                "line-width": 10,
+                "line-opacity": 0.15,
+                "line-blur": 6,
+            },
+        });
+
+        map.addLayer({
+            id: "route-line-layer",
+            type: "line",
+            source: "flight-plan",
+            filter: ["==", ["geometry-type"], "LineString"],
+            paint: {
+                "line-color": "#00d4ff",
+                "line-width": 4,
+                "line-opacity": 0.9,
+            },
+        });
+
+        map.addLayer({
+            id: "route-waypoints-circle",
+            type: "circle",
+            source: "flight-plan",
+            filter: ["==", ["geometry-type"], "Point"],
+            paint: {
+                "circle-radius": 5,
+                "circle-color": "#0a1628",
+                "circle-stroke-color": "#00d4ff",
+                "circle-stroke-width": 2,
+                "circle-opacity": 1,
+            },
+        });
+
+        map.addLayer({
+            id: "route-waypoints-label",
+            type: "symbol",
+            source: "flight-plan",
+            filter: ["==", ["geometry-type"], "Point"],
+            layout: {
+                "text-field": ["get", "name"],
+                "text-font": ["Open Sans Bold"],
+                "text-offset": [0, 1.4],
+                "text-anchor": "top",
+                "text-size": 11,
+            },
+            paint: {
+                "text-color": "#00d4ff",
+                "text-halo-color": "#001820",
+                "text-halo-width": 1.5,
+            },
+        });
+    }
 }
 
 async function updateAirports() {
     if (!map) return;
 
+    const zoom = map.getZoom();
     const bounds = map.getBounds();
+    const center = map.getCenter();
     const payload = {
         south: bounds.getSouth(),
         north: bounds.getNorth(),
@@ -183,6 +431,34 @@ async function updateAirports() {
                 properties: { icao: apt.icao, name: apt.name, priority: apt.rank },
             })),
         });
+    }
+
+    if (zoom >= 13 && airports.length > 0) {
+        const closest = airports.reduce((prev, curr) => {
+            const prevDist = Math.hypot(prev.lon - center.lng, prev.lat - center.lat);
+            const currDist = Math.hypot(curr.lon - center.lng, curr.lat - center.lat);
+            return currDist < prevDist ? curr : prev;
+        });
+
+        if (!loadedLayouts.has(closest.icao)) {
+            loadDetailedLayout(closest);
+        }
+    }
+}
+
+async function loadDetailedLayout(airport: { icao: string; name: string }) {
+    loadedLayouts.add(airport.icao);
+
+    try {
+        const geojson = await geoService.loadAirportOSM(airport.icao);
+
+        const detailSource = map?.getSource("airport-details") as any;
+        if (detailSource) {
+            detailSource.setData(geojson);
+        }
+    } catch (e) {
+        console.error("Failed to load OSM layout", e);
+        loadedLayouts.delete(airport.icao);
     }
 }
 
@@ -216,5 +492,51 @@ async function updateGates() {
             properties: { name: gate.name, airportIcao: gate.airportIcao },
         })),
     });
+}
+
+function fitRoute() {
+    if (!map) return;
+    const validPoints = currentWaypoints.value.filter((w) => w.type !== "invalid");
+    if (validPoints.length < 2) return;
+
+    const lngs = validPoints.map((w) => w.lon);
+    const lats = validPoints.map((w) => w.lat);
+    map.fitBounds(
+        [
+            [Math.min(...lngs), Math.min(...lats)],
+            [Math.max(...lngs), Math.max(...lats)],
+        ],
+        { padding: 80, duration: 800 },
+    );
+}
+
+async function updateCurrentRoute() {
+    await routeStore.computeCurrentRoute();
+
+    const validPoints = currentWaypoints.value.filter(({ type }) => type !== "invalid");
+
+    const routeGeoJSON = {
+        type: "FeatureCollection",
+        features: [
+            {
+                type: "Feature",
+                geometry: {
+                    type: "LineString",
+                    coordinates: validPoints.map((point) => [point!.lon, point!.lat]),
+                },
+            },
+            ...validPoints.map((point) => ({
+                type: "Feature",
+                properties: { name: point!.ident },
+                geometry: {
+                    type: "Point",
+                    coordinates: [point!.lon, point!.lat],
+                },
+            })),
+        ],
+    };
+
+    const source = map!.getSource("flight-plan") as any;
+    source.setData(routeGeoJSON);
 }
 </script>

@@ -32,6 +32,8 @@ const api = {
 
 	getAirportsInBounds: defineBackendTask(ipcRenderer, "getAirportsInBounds"),
 	getGatesInBounds: defineBackendTask(ipcRenderer, "getGatesInBounds"),
+	getWaypointByIdent: defineBackendTask(ipcRenderer, "getWaypointByIdent"),
+	getAirportByIcao: defineBackendTask(ipcRenderer, "getAirportByIcao"),
 
 	openExternal: (url: string) => shell.openExternal(url),
 };
@@ -79,6 +81,8 @@ declare global {
 
 			getAirportsInBounds: BackendTask<"getAirportsInBounds">;
 			getGatesInBounds: BackendTask<"getGatesInBounds">;
+			getWaypointByIdent: BackendTask<"getWaypointByIdent">;
+			getAirportByIcao: BackendTask<"getAirportByIcao">;
 		};
 	}
 }

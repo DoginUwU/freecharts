@@ -1,6 +1,10 @@
 import type { InferSelectModel } from "drizzle-orm";
 import type { IpcMainInvokeEvent } from "electron";
-import type { airportsTable, gatesTable } from "../../libs/db/schema";
+import type {
+	airportsTable,
+	gatesTable,
+	waypointsTable,
+} from "../../libs/db/schema";
 import type { Config } from "./ConfigTasks";
 
 export interface ImplementedCacheFileTasks {
@@ -65,9 +69,19 @@ export interface ImplementedAirportTasks {
 	): Promise<InferSelectModel<typeof airportsTable>[]>;
 
 	getGatesInBounds(
-	event: IpcMainInvokeEvent,
-	bounds: { south: number; north: number; west: number; east: number; }
-): Promise<InferSelectModel<typeof gatesTable>[]>;
+		event: IpcMainInvokeEvent,
+		bounds: { south: number; north: number; west: number; east: number },
+	): Promise<InferSelectModel<typeof gatesTable>[]>;
+
+	getWaypointByIdent(
+		event: IpcMainInvokeEvent,
+		ident: string,
+	): Promise<InferSelectModel<typeof waypointsTable> | null>;
+
+	getAirportByIcao(
+		event: IpcMainInvokeEvent,
+		icao: string,
+	): Promise<InferSelectModel<typeof airportsTable> | null>;
 }
 
 export type ImplementedTasks = ImplementedCacheFileTasks &

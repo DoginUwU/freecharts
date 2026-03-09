@@ -43,5 +43,7 @@ export class BackendTasks {
 
 		ipcMain.handle("getAirportsInBounds", airportTasks.getAirportsInBounds);
 		ipcMain.handle("getGatesInBounds", airportTasks.getGatesInBounds);
+		ipcMain.handle("getWaypointByIdent", airportTasks.getWaypointByIdent);
+		ipcMain.handle("getAirportByIcao", airportTasks.getAirportByIcao);
 	}
 }
