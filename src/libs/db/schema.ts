@@ -1,8 +1,8 @@
 import { relations } from "drizzle-orm";
 import { index, int, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const waypointsTable = sqliteTable(
-	"waypoints",
+export const fixesTable = sqliteTable(
+	"fixes",
 	{
 		id: int().primaryKey({ autoIncrement: true }),
 		ident: text().notNull(),
@@ -12,6 +12,20 @@ export const waypointsTable = sqliteTable(
 		region: text().notNull(),
 	},
 	(table) => [index("ident_idx").on(table.ident)],
+);
+
+export const navaidsTable = sqliteTable(
+	"navaids",
+	{
+		ident: text().notNull(),
+		type: text({ enum: ["VOR", "NDB"] }).notNull(),
+		lat: real().notNull(),
+		lon: real().notNull(),
+		frequency: real().notNull(),
+		region: text(),
+		name: text(),
+	},
+	(table) => [index("ident_type_idx").on(table.ident, table.type)],
 );
 
 export const airportsTable = sqliteTable(
@@ -101,14 +115,16 @@ export const airwaysTable = sqliteTable("airways", {
 	fromIdent: text().notNull(),
 	fromLat: real().notNull(),
 	fromLon: real().notNull(),
-	fromType: text({ enum: ["fix", "ndb", "vor"] }).notNull(),
+	fromType: text({ enum: ["FIX", "NDB", "VOR"] }).notNull(),
+	fromRegion: text().notNull(),
 	toIdent: text().notNull(),
 	toLat: real().notNull(),
 	toLon: real().notNull(),
-	toType: text({ enum: ["fix", "ndb", "vor"] }).notNull(),
+	toType: text({ enum: ["FIX", "NDB", "VOR"] }).notNull(),
+	toRegion: text().notNull(),
 	airwayName: text().notNull(),
-	directionRestriction: text({ enum: ["none", "forward", "backward"] })
-		.default("none")
+	directionRestriction: text({ enum: ["NONE", "FORWARD", "BACKWARD"] })
+		.default("NONE")
 		.notNull(),
 	level: text({ enum: ["high", "low"] })
 		.default("high")

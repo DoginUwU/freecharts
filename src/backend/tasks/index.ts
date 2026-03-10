@@ -3,6 +3,7 @@ import { AirportTasks } from "./AirportTasks";
 import { CacheFileTasks } from "./CacheFileTasks";
 import { ConfigTasks } from "./ConfigTasks";
 import { DirectoryTasks } from "./DirectoryTasks";
+import { RouteTasks } from "./RouteTasks";
 
 export class BackendTasks {
 	constructor(ipcMain: IpcMain) {
@@ -10,6 +11,7 @@ export class BackendTasks {
 		const configTasks = new ConfigTasks();
 		const directoryTasks = new DirectoryTasks();
 		const airportTasks = new AirportTasks();
+		const routeTasks = new RouteTasks();
 
 		ipcMain.handle("cacheFile", cacheFileTasks.cacheFile);
 		ipcMain.handle("findCachedFile", cacheFileTasks.findCachedFile);
@@ -45,5 +47,7 @@ export class BackendTasks {
 		ipcMain.handle("getGatesInBounds", airportTasks.getGatesInBounds);
 		ipcMain.handle("getWaypointByIdent", airportTasks.getWaypointByIdent);
 		ipcMain.handle("getAirportByIcao", airportTasks.getAirportByIcao);
+
+		ipcMain.handle("computeRoute", routeTasks.computeRoute);
 	}
 }

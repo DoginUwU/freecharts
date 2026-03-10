@@ -122,8 +122,11 @@ import {
 import { storeToRefs } from "pinia";
 import { computed, ref, watch } from "vue";
 import { useRouteStore } from "../../stores/routeStore";
+import { RouteWaypoint } from "../../types/route";
 import Input from "../Input.vue";
 import Textarea from "../Textarea.vue";
+
+type WpType = RouteWaypoint["type"];
 
 const emit = defineEmits<{
     "fit-route": [];
@@ -140,12 +143,12 @@ watch(currentRawRoute, (v) => {
     rawRouteInput.value = v;
 });
 
-const validCount = computed(() =>
-    currentWaypoints.value.filter((w) => w.type !== "invalid").length,
+const validCount = computed(
+    () => currentWaypoints.value.filter((w) => w.type !== "invalid").length,
 );
 
 async function applyRoute() {
-    if (rawRouteInput.value.trim() === routeStore.latestLoadedRawRoute) return;
+    if (rawRouteInput.value.trim() === routeStore.currentLoadedRouteKey) return;
     routeStore.currentRawRoute = rawRouteInput.value.trim().toUpperCase();
     isLoading.value = true;
     await routeStore.computeCurrentRoute();
@@ -186,8 +189,6 @@ const totalFuel = computed(() =>
         .reduce((acc, _, i) => acc + MOCK_FUEL_LEG[i % MOCK_FUEL_LEG.length], 0),
 );
 
-type WpType = "airport" | "waypoint" | "invalid";
-
 function dotClass(type: WpType, index: number): string {
     if (type === "invalid") return "border-red-500/70 bg-transparent";
     if (index === 0 || index === currentWaypoints.value.length - 1)
@@ -196,14 +197,32 @@ function dotClass(type: WpType, index: number): string {
 }
 
 function badgeClass(type: WpType): string {
-    if (type === "airport") return "bg-indigo-500/20 text-indigo-300";
-    if (type === "waypoint") return "bg-cyan-500/15 text-cyan-400";
-    return "bg-red-500/20 text-red-400";
+    switch (type) {
+        case "airport":
+            return "bg-indigo-500/20 text-indigo-300";
+        case "waypoint":
+            return "bg-cyan-500/15 text-cyan-400";
+        case "procedure":
+            return "bg-green-500/20 text-green-400";
+        case "airway":
+            return "bg-yellow-500/20 text-yellow-400";
+        default:
+            return "bg-red-500/20 text-red-400";
+    }
 }
 
 function typeLabel(type: WpType): string {
-    if (type === "airport") return "APT";
-    if (type === "waypoint") return "WPT";
-    return "INV";
+    switch (type) {
+        case "airport":
+            return "APT";
+        case "waypoint":
+            return "WPT";
+        case "procedure":
+            return "PROC";
+        case "airway":
+            return "AWY";
+        default:
+            return "INV";
+    }
 }
 </script>

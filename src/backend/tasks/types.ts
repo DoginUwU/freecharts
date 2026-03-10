@@ -2,9 +2,10 @@ import type { InferSelectModel } from "drizzle-orm";
 import type { IpcMainInvokeEvent } from "electron";
 import type {
 	airportsTable,
+	fixesTable,
 	gatesTable,
-	waypointsTable,
 } from "../../libs/db/schema";
+import type { RouteWaypoint } from "../../renderer/src/types/route";
 import type { Config } from "./ConfigTasks";
 
 export interface ImplementedCacheFileTasks {
@@ -76,7 +77,7 @@ export interface ImplementedAirportTasks {
 	getWaypointByIdent(
 		event: IpcMainInvokeEvent,
 		ident: string,
-	): Promise<InferSelectModel<typeof waypointsTable> | null>;
+	): Promise<InferSelectModel<typeof fixesTable> | null>;
 
 	getAirportByIcao(
 		event: IpcMainInvokeEvent,
@@ -84,10 +85,24 @@ export interface ImplementedAirportTasks {
 	): Promise<InferSelectModel<typeof airportsTable> | null>;
 }
 
+export interface RouteOptions {
+	departureRunway?: string;
+	arrivalRunway?: string;
+}
+
+export interface ImplementedRouteTasks {
+	computeRoute(
+		event: IpcMainInvokeEvent,
+		rawRoute: string,
+		options?: RouteOptions,
+	): Promise<RouteWaypoint[]>;
+}
+
 export type ImplementedTasks = ImplementedCacheFileTasks &
 	ImplementedConfigTasks &
 	ImplementedDirectoryTasks &
-	ImplementedAirportTasks;
+	ImplementedAirportTasks &
+	ImplementedRouteTasks;
 
 export interface BackendTaskReturn<T> {
 	onSuccess: () => T;

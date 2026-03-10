@@ -30,12 +30,14 @@ const api = {
 		"listDirectoryContents",
 	),
 
+	openExternal: (url: string) => shell.openExternal(url),
+
 	getAirportsInBounds: defineBackendTask(ipcRenderer, "getAirportsInBounds"),
 	getGatesInBounds: defineBackendTask(ipcRenderer, "getGatesInBounds"),
 	getWaypointByIdent: defineBackendTask(ipcRenderer, "getWaypointByIdent"),
 	getAirportByIcao: defineBackendTask(ipcRenderer, "getAirportByIcao"),
 
-	openExternal: (url: string) => shell.openExternal(url),
+	computeRoute: defineBackendTask(ipcRenderer, "computeRoute"),
 };
 
 if (process.contextIsolated) {
@@ -83,6 +85,8 @@ declare global {
 			getGatesInBounds: BackendTask<"getGatesInBounds">;
 			getWaypointByIdent: BackendTask<"getWaypointByIdent">;
 			getAirportByIcao: BackendTask<"getAirportByIcao">;
+
+			computeRoute: BackendTask<"computeRoute">;
 		};
 	}
 }

@@ -8,11 +8,7 @@ import {
 	sql,
 } from "drizzle-orm";
 import { db } from "../../libs/db/client";
-import {
-	airportsTable,
-	gatesTable,
-	waypointsTable,
-} from "../../libs/db/schema";
+import { airportsTable, fixesTable, gatesTable } from "../../libs/db/schema";
 import type { ImplementedAirportTasks } from "./types";
 
 export class AirportTasks implements ImplementedAirportTasks {
@@ -68,11 +64,11 @@ export class AirportTasks implements ImplementedAirportTasks {
 	async getWaypointByIdent(
 		_event: any,
 		ident: string,
-	): Promise<InferSelectModel<typeof waypointsTable> | null> {
+	): Promise<InferSelectModel<typeof fixesTable> | null> {
 		const result = await db
 			.select()
-			.from(waypointsTable)
-			.where(eq(waypointsTable.ident, ident))
+			.from(fixesTable)
+			.where(eq(fixesTable.ident, ident))
 			.limit(1);
 		return result.length > 0 ? result[0] : null;
 	}

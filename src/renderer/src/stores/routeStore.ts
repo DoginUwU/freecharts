@@ -1,18 +1,15 @@
 import { defineStore } from "pinia";
-
-interface RouteWaypoint {
-	ident: string;
-	type: "airport" | "waypoint" | "invalid";
-	lat: number;
-	lon: number;
-}
+import type { RouteWaypoint } from "../types/route";
 
 export const useRouteStore = defineStore("route", {
 	state: () => ({
-		currentRawRoute: "SBRJ PUMS3C ISRIN EPKAX DAKDA SBCF",
+		currentRawRoute: "SBLO AKRA1A AKTIT UZ65 ANSOK UZ42 ZARES MOLE1A SBGR",
 		currentWaypoints: [] as RouteWaypoint[],
-		latestLoadedRawRoute: "",
+		departureRunway: "",
+		arrivalRunway: "",
+		currentLoadedRouteKey: "",
 	}),
+	getters: {},
 	actions: {
 		async computeCurrentRoute() {
 			if (!this.currentRawRoute) {
@@ -20,63 +17,20 @@ export const useRouteStore = defineStore("route", {
 				return;
 			}
 
-			if (this.currentRawRoute === this.latestLoadedRawRoute) {
+			const currentKey =
+				this.currentRawRoute + this.departureRunway + this.arrivalRunway;
+
+			if (currentKey === this.currentLoadedRouteKey) {
 				return;
 			}
 
-			const fixes = this.currentRawRoute.toUpperCase().trim().split(" ");
-
-			if (fixes.length === 0) {
-				this.currentWaypoints = [];
-				return;
-			}
-
-			const RMKS_WAYPOINTS = ["DCT"];
-
-			const data = fixes.map<Promise<RouteWaypoint | null>>(async (fix) => {
-				if (RMKS_WAYPOINTS.includes(fix) || fix.trim() === "") {
-					return null;
-				}
-
-				const airport = await window.api
-					.getAirportByIcao(fix)
-					.catch(() => null);
-				if (airport) {
-					return {
-						ident: fix,
-						type: "airport",
-						lat: airport.lat,
-						lon: airport.lon,
-					};
-				}
-
-				const waypoint = await window.api
-					.getWaypointByIdent(fix)
-					.catch(() => null);
-				if (waypoint) {
-					return {
-						ident: fix,
-						type: "waypoint",
-						lat: waypoint.lat,
-						lon: waypoint.lon,
-					};
-				}
-
-				return {
-					ident: fix,
-					type: "invalid",
-					lat: 0,
-					lon: 0,
-				};
+			const validPoints = await window.api.computeRoute(this.currentRawRoute, {
+				departureRunway: this.departureRunway,
+				arrivalRunway: this.arrivalRunway,
 			});
 
-			const resolvedData = await Promise.all(data);
-			const validPoints = resolvedData.filter(
-				(point): point is NonNullable<typeof point> => point !== null,
-			);
-
 			this.currentWaypoints = validPoints;
-			this.latestLoadedRawRoute = this.currentRawRoute;
+			this.currentLoadedRouteKey = currentKey;
 		},
 	},
 });
