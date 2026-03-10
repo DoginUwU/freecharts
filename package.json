@@ -9,7 +9,8 @@
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
-		"db:push": "npx drizzle-kit push"
+		"db:push": "yarn add better-sqlite3 && npx drizzle-kit push && yarn rebuild",
+		"rebuild": "electron-rebuild -f -w better-sqlite3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
@@ -39,6 +40,8 @@
 	"author": "dogin",
 	"license": "MIT",
 	"dependencies": {
+		"@electron-toolkit/preload": "^3.0.2",
+		"@electron-toolkit/utils": "^4.0.0",
 		"@panzoom/panzoom": "^4.6.0",
 		"@phosphor-icons/vue": "^2.2.1",
 		"@tanstack/vue-query": "^5.64.2",
@@ -49,8 +52,6 @@
 		"electron-squirrel-startup": "^1.0.1",
 		"electron-store": "^10.0.0",
 		"electron-vite": "^5.0.0",
-		"@electron-toolkit/preload": "^3.0.2",
-    	"@electron-toolkit/utils": "^4.0.0",
 		"leaflet": "^1.9.4",
 		"lodash-es": "^4.17.21",
 		"maplibre-gl": "^5.19.0",
