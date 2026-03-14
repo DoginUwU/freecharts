@@ -17,9 +17,8 @@
             <div class="px-4 py-3">
                 <div class="text-[11px] text-slate-500 uppercase tracking-widest mb-2">Camadas</div>
                 <div class="flex items-center justify-between gap-3">
-                    <span class="text-sm text-slate-300">Aeroportos</span>
-                    <Toggle :model-value="airportsLayerEnabled"
-                        @update:model-value="emit('update:airports-layer-enabled', $event)" />
+                    <span class="text-sm text-slate-300">Aeródromos</span>
+                    <Toggle v-model="airportsLayerEnabled" />
                 </div>
             </div>
         </div>
@@ -28,7 +27,6 @@
 
 <script setup lang="ts">
 import { PhSlidersHorizontal } from "@phosphor-icons/vue";
-import { ref } from "vue";
 import CollapsableFloatingCard from "../CollapsableFloatingCard.vue";
 import Toggle from "../Toggle.vue";
 
@@ -37,12 +35,11 @@ defineProps<{
     selectedRea: string;
 }>();
 
-const airportsLayerEnabled = ref(true);
+const airportsLayerEnabled = defineModel<boolean>('airports-layer-enabled');
 
 const emit = defineEmits<{
     "update:map-style": [value: "dark" | "satellite"];
     "update:selected-rea": [value: string];
-    "update:airports-layer-enabled": [value: boolean];
 }>();
 
 const mapStyles = [

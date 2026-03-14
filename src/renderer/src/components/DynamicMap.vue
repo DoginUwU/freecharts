@@ -3,7 +3,7 @@
         <div ref="mapElement" class="w-full h-full"></div>
 
         <MapSettings :map-style="currentStyle" :selected-rea="selectedRea" @update:map-style="setMapStyle"
-            @update:selected-rea="selectedRea = $event" @update:airports-layer-enabled="applyAirportsLayerVisibility" />
+            @update:selected-rea="selectedRea = $event" v-model:airports-layer-enabled="airportsLayerEnabled" />
 
         <RouteManager @fit-route="fitRoute" />
     </div>
@@ -37,6 +37,7 @@ const { currentWaypoints } = storeToRefs(routeStore);
 
 const currentStyle = ref<"dark" | "satellite">("dark");
 const selectedRea = ref("none");
+const airportsLayerEnabled = ref(true);
 
 const styles: Record<"dark" | "satellite", string | StyleSpecification> = {
     dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
@@ -148,16 +149,24 @@ watch(currentWaypoints, () => {
     updateCurrentRoute();
 });
 
+watch(airportsLayerEnabled, () => {
+    applyAirportsLayerVisibility();
+});
+
 function setMapStyle(nextStyle: "dark" | "satellite") {
     if (!map) return;
     if (currentStyle.value === nextStyle) return;
     currentStyle.value = nextStyle;
 
     map.setStyle(styles[nextStyle]);
+
+    applyAirportsLayerVisibility();
 }
 
-function applyAirportsLayerVisibility(value: boolean) {
+function applyAirportsLayerVisibility() {
     if (!map) return;
+
+    const value = airportsLayerEnabled.value;
 
     const visibility = value ? "visible" : "none";
 
