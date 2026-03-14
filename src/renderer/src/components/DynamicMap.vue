@@ -2,20 +2,15 @@
     <div class="relative w-full h-full">
         <div ref="mapElement" class="w-full h-full"></div>
 
-        <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
-            <button @click="toggleStyle"
-                class="bg-zinc-900/90 border-zinc-700 text-white p-3 rounded-xl border border-white/10 shadow-2xl backdrop-blur-md transition-all active:scale-95">
-                <PhMoonStars />
-            </button>
-        </div>
+        <MapSettings :map-style="currentStyle" :selected-rea="selectedRea" @update:map-style="setMapStyle"
+            @update:selected-rea="selectedRea = $event" @update:airports-layer-enabled="applyAirportsLayerVisibility" />
 
         <RouteManager @fit-route="fitRoute" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { PhMoonStars } from "@phosphor-icons/vue";
-import type { Map as MapLibre } from "maplibre-gl";
+import type { Map as MapLibre, StyleSpecification } from "maplibre-gl";
 import { storeToRefs } from "pinia";
 import {
     h,
@@ -23,7 +18,6 @@ import {
     nextTick,
     onMounted,
     onUnmounted,
-    reactive,
     ref,
     render,
     watch,
@@ -31,6 +25,7 @@ import {
 import { geoService } from "../services/GeoService";
 import { useRouteStore } from "../stores/routeStore";
 import AirportMapPopup from "./Map/AirportMapPopup.vue";
+import MapSettings from "./Map/MapSettings.vue";
 import RouteManager from "./Map/RouteManager.vue";
 
 const loadedLayouts = new Set<string>();
@@ -41,8 +36,9 @@ const routeStore = useRouteStore();
 const { currentWaypoints } = storeToRefs(routeStore);
 
 const currentStyle = ref<"dark" | "satellite">("dark");
+const selectedRea = ref("none");
 
-const styles = {
+const styles: Record<"dark" | "satellite", string | StyleSpecification> = {
     dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
     satellite: {
         version: 8,
@@ -152,11 +148,30 @@ watch(currentWaypoints, () => {
     updateCurrentRoute();
 });
 
-function toggleStyle() {
+function setMapStyle(nextStyle: "dark" | "satellite") {
     if (!map) return;
-    currentStyle.value = currentStyle.value === "dark" ? "satellite" : "dark";
+    if (currentStyle.value === nextStyle) return;
+    currentStyle.value = nextStyle;
 
-    map.setStyle(styles[currentStyle.value] as any);
+    map.setStyle(styles[nextStyle]);
+}
+
+function applyAirportsLayerVisibility(value: boolean) {
+    if (!map) return;
+
+    const visibility = value ? "visible" : "none";
+
+    if (map.getLayer("airports-circle")) {
+        map.setLayoutProperty("airports-circle", "visibility", visibility);
+    }
+
+    if (map.getLayer("airports-label")) {
+        map.setLayoutProperty("airports-label", "visibility", visibility);
+    }
+
+    if (!value) {
+        map.getCanvas().style.cursor = "";
+    }
 }
 
 function setupLayers() {
