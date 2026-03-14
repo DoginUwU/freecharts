@@ -24,7 +24,7 @@
 <script lang="ts" setup>
 import { useQuery } from "@tanstack/vue-query";
 import { storeToRefs } from "pinia";
-import { onMounted, reactive } from "vue";
+import { onMounted } from "vue";
 import ChartAirfieldData from "../components/Charts/ChartAirfieldData.vue";
 import ChartFavorites from "../components/Charts/ChartFavorites.vue";
 import ChartReader from "../components/Charts/ChartReader.vue";
@@ -79,13 +79,6 @@ onMounted(() => {
 		sidebarStore.minimizeData = false;
 	}
 });
-
-// async function loadAirfieldByIcao(icao: string) {
-//   state.currentAirfield = await airfieldService.findByICAO(icao);
-//   state.charts = await airfieldService.findChartsByICAO(icao);
-//   // currentChartType = availableChartTypes.value[0].value;
-//   // chartsStore.favoriteChart(state.charts[0]);
-// }
 
 async function loadChart(chart: Chart) {
 	currentChartPage.value = 1;

@@ -1,13 +1,9 @@
 <template>
-  <div
-    class="flex flex-col items-center text-center gap-2 w-full h-full flex-1 mt-4"
-  >
-    <Input
-      v-model="state.icao"
-      class="w-full"
-      placeholder="ICAO"
-      @keydown="handleKeyDownICAO"
-    />
+  <div class="flex flex-col items-center text-center gap-2 w-full h-full flex-1 mt-4">
+    <Input v-model="state.icao" class="w-full" placeholder="ICAO" @keydown="handleKeyDownICAO" />
+    <template v-if="isLoading">
+      <span class="text-sm opacity-75 mt-2">Carregando dados do aeródromo...</span>
+    </template>
     <template v-if="airfield">
       <div class="flex flex-col my-2">
         <h2 class="text-white font-bold text-2xl">
@@ -34,18 +30,16 @@
           </CollapsableData> -->
       <!-- <div class="w-full h-[1px] bg-zinc-700 my-3"></div> -->
 
-      <ChartList
-        :selected-chart="selectedChart"
-        :charts="charts"
-        @load-chart="emit('loadChart', $event)"
-      />
+      <ChartList :selected-chart="selectedChart" :charts="charts" @load-chart="emit('loadChart', $event)" />
     </template>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { useQuery } from "@tanstack/vue-query";
 import { storeToRefs } from "pinia";
 import { onBeforeMount, reactive, watch } from "vue";
+import { airfieldService } from "../../services/AirfieldService";
 import { useChartsStore } from "../../stores/chartsStore";
 import type { Airfield, Chart } from "../../types/airfield";
 import Input from "../Input.vue";
@@ -54,50 +48,56 @@ import ChartList from "./ChartList.vue";
 const chartsStore = useChartsStore();
 const { currentIcao } = storeToRefs(chartsStore);
 
+const { data: airfield, isLoading } = useQuery({
+  queryKey: ["airfield", currentIcao],
+  queryFn: async () => {
+    if (!currentIcao.value) return null;
+    return airfieldService.findByICAO(currentIcao.value);
+  },
+  staleTime: Infinity,
+});
+
 const emit = defineEmits<{
-	loadChart: [chart: Chart];
-	loadAirfield: [icao: string];
+  loadChart: [chart: Chart];
 }>();
 
 const props = defineProps<{
-	selectedChart: Chart | null;
-	airfield?: Airfield | null;
-	charts: Chart[];
+  selectedChart: Chart | null;
+  charts: Chart[];
 }>();
 
 const state = reactive({
-	icao: currentIcao.value,
+  icao: currentIcao.value,
 });
 
 onBeforeMount(() => {
-	if (currentIcao.value) {
-		handleICAO();
-	}
+  if (currentIcao.value) {
+    handleICAO();
+  }
 });
 
 watch(
-	() => props.airfield?.icao,
-	() => {
-		state.icao = "";
-	},
+  () => airfield?.value?.icao,
+  () => {
+    state.icao = "";
+  },
 );
 
 watch(
-	() => state.icao,
-	() => {
-		state.icao = state.icao.toUpperCase();
-	},
+  () => state.icao,
+  () => {
+    state.icao = state.icao.toUpperCase();
+  },
 );
 
 function handleKeyDownICAO(event: KeyboardEvent) {
-	if (event.code === "Enter" && state.icao.length === 4) {
-		handleICAO();
-	}
+  if (event.code === "Enter" && state.icao.length === 4) {
+    handleICAO();
+  }
 }
 
 function handleICAO() {
-	currentIcao.value = state.icao;
-	emit("loadAirfield", state.icao);
-	state.icao = "";
+  currentIcao.value = state.icao;
+  state.icao = "";
 }
 </script>

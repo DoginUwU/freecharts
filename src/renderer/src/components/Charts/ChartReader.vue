@@ -135,6 +135,8 @@ const invertColors = computed(() => {
 	return currentSettings.value.chartsTheme === "dark";
 });
 
+let renderTimeout: ReturnType<typeof setTimeout> | null = null;
+
 async function renderPage() {
 	if (
 		!canvas.value ||
@@ -146,63 +148,47 @@ async function renderPage() {
 		return;
 	}
 
-	const ratio = window.devicePixelRatio;
+	const ratio = window.devicePixelRatio || 1;
 
 	if (!page || page.pageNumber !== currentChartPage.value) {
 		page = await pdf.getPage(currentChartPage.value);
 
 		const fallbackContext = fallbackCanvas.value.getContext("2d");
-
 		if (!fallbackContext) return;
 
-		const fallbackViewport = page.getViewport({ scale: 1 });
-		fallbackCanvas.value.width = fallbackViewport.width * ratio;
-		fallbackCanvas.value.height = fallbackViewport.height * ratio;
+		const baseViewport = page.getViewport({ scale: 1 });
+
+		panContainer.value.style.width = `${baseViewport.width}px`;
+		panContainer.value.style.height = `${baseViewport.height}px`;
+
+		const fallbackViewport = page.getViewport({ scale: ratio });
+		fallbackCanvas.value.width = fallbackViewport.width;
+		fallbackCanvas.value.height = fallbackViewport.height;
+
 		await page.render({
 			canvasContext: fallbackContext,
 			viewport: fallbackViewport,
 			annotationMode: 0,
 		}).promise;
-
-		panContainer.value.style.width = `${fallbackCanvas.value.width}px`;
-		panContainer.value.style.height = `${fallbackCanvas.value.height}px`;
 	}
 
 	const context = canvas.value.getContext("2d");
-
 	if (!context) return;
 
 	state.renderInProgress = true;
 	fallbackCanvas.value.style.display = "block";
 
-	const viewport = page.getViewport({ scale: state.scale });
+	const renderScale = state.scale * ratio;
+	const renderViewport = page.getViewport({ scale: renderScale });
 
-	canvas.value.width = viewport.width * ratio;
-	canvas.value.height = viewport.height * ratio;
-	context.scale(ratio, ratio);
+	canvas.value.width = renderViewport.width;
+	canvas.value.height = renderViewport.height;
 
 	await page.render({
 		canvasContext: context,
-		viewport,
+		viewport: renderViewport,
 		annotationMode: 0,
 	}).promise;
-
-	// if (!textLayerData) {
-	//   if (!page || !textLayer.value) return;
-
-	//   textLayer.value.innerHTML = "";
-
-	//   const textContent = await page.getTextContent();
-
-	//   textLayerData = new pdfjs.TextLayer({
-	//     container: textLayer.value,
-	//     textContentSource: textContent,
-	//     viewport,
-	//   });
-	//   await textLayerData.render();
-	// }
-
-	// textLayer.value.style.setProperty("--scale-factor", String(state.scale));
 
 	fallbackCanvas.value.style.display = "none";
 	state.renderInProgress = false;
@@ -213,21 +199,19 @@ function handleZoom(event: WheelEvent) {
 
 	event.preventDefault();
 
-	const zoomStep = 0.2;
-	const delta = event.deltaY > 0 ? -zoomStep : zoomStep;
-	const newScale = Math.min(Math.max(state.scale + delta, 0.5), 5);
-
-	if (newScale === state.scale) return;
-
-	state.scale = newScale;
-
-	const currentPan = panzoom?.getPan();
-
-	if (!currentPan) return;
-
 	panzoom?.zoomWithWheel(event);
 
-	renderPage();
+	const currentScale = panzoom?.getScale();
+
+	if (currentScale && currentScale !== state.scale) {
+		state.scale = currentScale;
+
+		if (renderTimeout) clearTimeout(renderTimeout);
+
+		renderTimeout = setTimeout(() => {
+			renderPage();
+		}, 50);
+	}
 }
 
 function changePage(page: number) {
